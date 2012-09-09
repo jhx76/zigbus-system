@@ -226,6 +226,5 @@ namespace error {
         QString toString() const throw();
     };
 
-
 }
 #endif // ERROR_H

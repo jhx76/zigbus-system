@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core xml xmlpatterns network sql
+QT       += core xml xmlpatterns network sql debug
 
 QT       -= gui
 
@@ -87,4 +87,5 @@ HEADERS += \
     ../lib/core/AbstractApplication.h \
     ../doxygen-mainpage.h \
     ../lib/com/zbp/ZbpMessage.h \
-    ../lib/com/zbp/ZbpAddress.h
+    ../lib/com/zbp/ZbpAddress.h \
+    ../lib/com/zbp/zigbus.h

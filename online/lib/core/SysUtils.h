@@ -2,7 +2,7 @@
 #define SYSUTILS_H
 
 #include <QString>
-
+#include <QBitArray>
 #define STR_LF              "\n"
 #define STR_BRACE_LEFT      "{"
 #define STR_BRACE_RIGHT     "}"
@@ -35,7 +35,11 @@ namespace utils {
   */
 QString getSousChaine(const QString& base, const QString& separator, int position, bool returnbase = false);
 
+
 }
+
+
+
 
 class GenMessage;
 

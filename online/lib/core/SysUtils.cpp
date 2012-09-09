@@ -32,7 +32,13 @@ QString getSousChaine(const QString& base, const QString& separator, int positio
     return tmp;
 }
 
+
+
+
 }
+
+
+
 
 //----------------------------------------------------------------------------
 

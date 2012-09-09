@@ -167,12 +167,12 @@ void DBInitRead::importDatabaseProperties(const QString& fileName) {
         if (query.evaluateTo(&xmlResult)) {
             if(xmlResult.contains("\n"))
                 xmlResult.remove("\n");
-                databaseName = xmlResult;
+            databaseName = xmlResult;
         }
     }
     else
         throw error::InitializationException(""+AT+" query failed", true);
-        //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
+    //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
 
     query.setQuery("declare variable $url external;"
                    "doc($url)/configuration/database/hostaddress/text()");
@@ -180,12 +180,12 @@ void DBInitRead::importDatabaseProperties(const QString& fileName) {
         if (query.evaluateTo(&xmlResult)) {
             if(xmlResult.contains("\n"))
                 xmlResult.remove("\n");
-                hostAddress = xmlResult;
+            hostAddress = xmlResult;
         }
     }
     else
         throw error::InitializationException(""+AT+" query failed", true);
-        //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
+    //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
 
     query.setQuery("declare variable $url external;"
                    "doc($url)/configuration/database/username/text()");
@@ -193,25 +193,25 @@ void DBInitRead::importDatabaseProperties(const QString& fileName) {
         if (query.evaluateTo(&xmlResult)) {
             if(xmlResult.contains("\n"))
                 xmlResult.remove("\n");
-                userName = xmlResult;
+            userName = xmlResult;
         }
     }
     else
         throw error::InitializationException(""+AT+" query failed", true);
-        //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
+    //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
 
     query.setQuery("declare variable $url external;"
                    "doc($url)/configuration/database/password/text()");
     if (query.isValid()) {
         if (query.evaluateTo(&xmlResult)) {
-                password = xmlResult;
-                if(xmlResult.contains("\n"))
-                    xmlResult.remove("\n");
+            password = xmlResult;
+            if(xmlResult.contains("\n"))
+                xmlResult.remove("\n");
         }
     }
     else
         throw error::InitializationException(""+AT+" query failed", true);
-        //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
+    //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
 
     query.setQuery("declare variable $url external;"
                    "doc($url)/configuration/database/hostport/text()");
@@ -222,12 +222,12 @@ void DBInitRead::importDatabaseProperties(const QString& fileName) {
             hostPort = xmlResult.toInt(&conversionOK);
             if(!conversionOK)
                 throw error::InitializationException(""+AT+" unable to convert hostport from string to integer", true);
-                //qDebug() << "[DBInitRead::importDatabaseProperties] error: unable to convert hostport from string to integer";
+            //qDebug() << "[DBInitRead::importDatabaseProperties] error: unable to convert hostport from string to integer";
         }
     }
     else
         throw error::InitializationException(""+AT+" query failed", true);
-        //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
+    //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
     this->dbProperties.setDatabaseName(databaseName.trimmed());
     this->dbProperties.setHostAddress(hostAddress.trimmed());
     this->dbProperties.setHostPort(hostPort);
@@ -249,59 +249,73 @@ void DBInitRead::importXAPNetworkProperties(const QString& fileName) {
     QXmlQuery query;
     query.bindVariable("url", QXmlItem(QVariant(url)));
     query.setQuery("declare variable $url external;"
-                   "doc($url)/configuration/xapnetwork/heartbeat/text()");
-    if (query.isValid()) {
-        if (query.evaluateTo(&xmlResult)) {
-            if(xmlResult.contains("\n")) xmlResult.remove("\n");
-                bool convertOk;
-                hbInterval = xmlResult.toInt(&convertOk);
-                if(!convertOk) hbInterval = 60000;
-        }
-    }
-    else qDebug() << "[DBInitRead::importDatabaseProperties] invalid query ! : 'declare variable $url external; doc($url)xapnetwork/hertbeat/@interval'";
-
-    query.setQuery("declare variable $url external;"
-                   "doc($url)/configuration/xapnetwork/diffusionaddress/text()");
-    if(query.isValid()) {
-        if(query.evaluateTo(&xmlResult)) {
-            if(xmlResult.contains("\n")) xmlResult.remove("\n");
-            diffusionAddress = xmlResult;
-        }
-    }
-    else qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
-
-    query.setQuery("declare variable $url external;"
-                   "doc($url)/configuration/xapnetwork/diffusionport/text()");
-    if(query.isValid()) {
-        if(query.evaluateTo(&xmlResult)) {
+                   "doc($url)/configuration/xap-network/heartbeat/text()");
+    if (query.isValid() && query.evaluateTo(&xmlResult)) {
             if(xmlResult.contains("\n")) xmlResult.remove("\n");
             bool convertOk;
-            diffusionPort = xmlResult.toInt(&convertOk);
-            if(!convertOk) diffusionPort = -1;
-        }
+            hbInterval = xmlResult.toInt(&convertOk);
+            if(!convertOk) {
+                qDebug() << "[WARNING] "+AT+" xap-network heartbeat interval bad value.";
+                qDebug() << "using default interval (60 000 msec)";
+                hbInterval = 60000;
+            }
     }
-    else qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
-
-
-   query.setQuery("declare variable $url external;"
-                   "doc($url)/configuration/xapnetwork/xapp-address/text()");
-    if(query.isValid()) {
-        if(query.evaluateTo(&xmlResult)) {
-            if(xmlResult.contains("\n")) xmlResult.remove("\n");
-            xapAddress = xmlResult;
-        }
-    }
-    else qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
+    else
+        throw error::InitializationException(""+AT+" query failed !", true);
 
     query.setQuery("declare variable $url external;"
-                   "doc($url)/configuration/xapnetwork/heartbeat/@enabled");
-    if(query.isValid()) {
-        if(query.evaluateTo(&xmlResult)) {
+                   "doc($url)/configuration/xap-network/diffusion-address/text()");
+    if(query.isValid() && query.evaluateTo(&xmlResult)) {
             if(xmlResult.contains("\n")) xmlResult.remove("\n");
-            enableHeartBeat = (xmlResult != "false");
+            diffusionAddress = xmlResult;
+    }
+    else {
+        qDebug() << "[WARNING] "+AT+" diffusion address not found";
+        qDebug() << "using default (255.255.255.255)";
+        diffusionAddress = "";
+    }
+
+    query.setQuery("declare variable $url external;"
+                   "doc($url)/configuration/xap-network/diffusion-port/text()");
+    if(query.isValid() && query.evaluateTo(&xmlResult)) {
+        if(xmlResult.contains("\n")) xmlResult.remove("\n");
+        bool convertOk;
+        diffusionPort = xmlResult.toInt(&convertOk);
+        if(!convertOk) {
+            qDebug() << "[WARNING] "+AT+" diffusion port not found";
+            qDebug() << "using default (3639)";
+            diffusionPort = 3639;
         }
     }
-    else qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
+    else {
+        qDebug() << "[WARNING] "+AT+" diffusion port not found";
+        qDebug() << "using default (3639)";
+        diffusionPort = 3639;
+    }
+
+
+    query.setQuery("declare variable $url external;"
+                   "doc($url)/configuration/xap-network/xap-address/text()");
+    if(query.isValid() && query.evaluateTo(&xmlResult)) {
+            if(xmlResult.contains("\n")) xmlResult.remove("\n");
+            xapAddress = xmlResult;
+    }
+    else {
+        throw error::InitializationException(""+AT+" xap-address not found...", true);
+    }
+
+    query.setQuery("declare variable $url external;"
+                   "doc($url)/configuration/xap-network/heartbeat/@enabled");
+    if(query.isValid() && query.evaluateTo(&xmlResult)) {
+            if(xmlResult.contains("\n"))
+                xmlResult.remove("\n");
+            enableHeartBeat = (xmlResult != "false");
+    }
+    else {
+        qDebug() << "[WARNING] "+AT+" enable parameter for xap-heartbeat cannot be found...";
+        qDebug() << "...using default value (true)";
+        enableHeartBeat = true;
+    }
 
     xapProperties.setAppAddress(XAPAddress::fromString(xapAddress));
     xapProperties.setHeartBeatInterval(hbInterval);
