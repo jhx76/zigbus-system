@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>629</width>
-    <height>424</height>
+    <height>449</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -79,60 +79,73 @@
       <item row="0" column="1">
        <widget class="QComboBox" name="moduleComboBox"/>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>Pin2</string>
+      <item row="2" column="0" colspan="3">
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Main pin</string>
         </property>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0" rowspan="2">
+          <widget class="QComboBox" name="pin1ComboBox"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QRadioButton" name="pin1RadioAnalogic">
+           <property name="text">
+            <string>Analogic</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QRadioButton" name="pin1RadioNumeric">
+           <property name="text">
+            <string>Numeric</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="pin2ComboBox"/>
+      <item row="4" column="0" colspan="3">
+       <widget class="QGroupBox" name="optionPinGroupBox">
+        <property name="title">
+         <string>Optional pin</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="0" rowspan="2">
+          <widget class="QComboBox" name="pin2ComboBox"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QRadioButton" name="pin2RadioAnalogic">
+           <property name="text">
+            <string>Analogic</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QRadioButton" name="pin2RadioNumeric">
+           <property name="text">
+            <string>Numeric</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
-      <item row="6" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>Pin Type</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
-       <widget class="QComboBox" name="pinTypeComboBox"/>
-      </item>
-      <item row="3" column="2">
-       <widget class="QCheckBox" name="enablePin2Box">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>enable</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="pin1ComboBox"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Pin1</string>
-        </property>
-       </widget>
+       <widget class="QComboBox" name="pinTypeComboBox"/>
       </item>
      </layout>
     </widget>

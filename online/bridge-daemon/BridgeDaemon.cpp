@@ -4,27 +4,43 @@ BridgeDaemon::BridgeDaemon(QObject* parent) : QObject(parent), AbstractApplicati
 {
     qApp->setApplicationName("bridge-daemon");
     qApp->setApplicationVersion("0.0.1a");
-    this->xapNetwork = NULL;
-    this->iniParam = new DBInitRead(this);
+    xapNetwork = NULL;
+    DAT = NULL;
+    queryBean = NULL;
+    zbpNetwork = NULL;
+    iniParam = new DBInitRead(this);
 }
 
 void BridgeDaemon::initializeApplication() {
     try {
+        // Creation du point d'acces pour le dialogue xAP
         XAPNetworkProperties xapProperties;
         iniParam->initialize();
         xapProperties = iniParam->getXapProperties();
-        xapNetwork = new XAPNetwork(QString("xap-bridge"), xapProperties, this);
+        xapNetwork = new XAPNetwork("xap", xapProperties, this);
         connect(xapNetwork, SIGNAL(messageReceived(GenMessage*,QString)), this, SLOT(processMessage(GenMessage*, QString)));
+        connect(this, SIGNAL(messageForApps(GenMessage*)), xapNetwork, SLOT(sendMessage(GenMessage*)));
         connect(xapNetwork, SIGNAL(toDisplay(QString)), this, SLOT(display(QString)));
         xapNetwork->initialize();
-        xapNetwork->startListening();
+        //xapNetwork->startListening();
+        xapNetwork->start();
 
+        //Creation du point d'acces pour le réseau de module zigbus
+        queryBean = new QueryBean(iniParam->getDbProperties());
+        DAT = new SingleDAT(queryBean);
+        GenMessageFactory::setDeviceAddressTranslator(DAT);
+
+        zbpNetwork = new ZbpNetwork(DAT, iniParam->getZbpProperties(), this);
+        connect(this, SIGNAL(messageForDevices(GenMessage*)), zbpNetwork, SLOT(sendMessage(GenMessage*)));
+        connect(zbpNetwork, SIGNAL(messageReceived(GenMessage*,QString)), this, SLOT(processMessage(GenMessage*,QString)));
+        connect(zbpNetwork, SIGNAL(toDisplay(QString)), this, SLOT(display(QString)));
+        zbpNetwork->initialize();
+        zbpNetwork->start();
     }
     catch(const error::InitializationException &e) {
         qDebug() << e.toString();
-        if(e.isCritical()) {
-            qDebug() << "CRITICAL ERROR";
-            qDebug() << qApp->applicationName()+qApp->applicationVersion()+" will now quit";
+        if(e.isCritic()) {
+            qDebug() << "CRITICAL ERROR: " << qApp->applicationName()+qApp->applicationVersion()+" will now quit";
             clearAndQuit();
         }
     }
@@ -39,21 +55,21 @@ void BridgeDaemon::clearAndQuit() {
     if(xapNetwork != NULL)
         delete xapNetwork;
     qApp->quit();
+    if(zbpNetwork != NULL)
+        delete zbpNetwork;
+    if(DAT != NULL)
+        delete DAT;
+    if(queryBean != NULL)
+        delete queryBean;
 }
 
 
 void BridgeDaemon::processMessage(GenMessage* message, QString networkId) {
-    if(networkId == "xap-bridge") {
-        //Traitement des messages venant du reseau xAP
-        qDebug() << "message received:\n";
-        qDebug() << message->toString();
-        //Translation xap -> zigbus + Transmission sur zigbus
-        //zigbusNetwork->sendMessage(message);
+    if(networkId == "xap") {
+        emit messageForDevices(message);
     }
-    else if(networkId == "zigbus-bridge") {
-        //Traitement des messages venant des Devices
-        //==> Translation zigbus -> xAP + transmission sur xAP
-        //xapNetwork->sendMessage(message);
+    else if(networkId == "zigbus") {
+        emit messageForApps(message);
     }
 }
 

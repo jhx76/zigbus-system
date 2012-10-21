@@ -1,3 +1,21 @@
+/*
+    This file is part of Zigbus Home Automation API. 
+    Copyright (C) 2012 jhx
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "DatabaseProperties.h"
 
 //--------------------------------------------------------------------------------------
@@ -27,7 +45,7 @@ DatabaseProperties::DatabaseProperties(const QString &fileName) {
     int hostPort;
     bool fileExists = QFile::exists(fileName);
     if(!fileExists) {
-        throw error::InitializationException(""+AT+" Configuration file not found !", true);
+        throw error::InitializationException(" Configuration file not found !", AT, true);
     }
 
     QString url = fileName;
@@ -43,7 +61,7 @@ DatabaseProperties::DatabaseProperties(const QString &fileName) {
         }
     }
     else
-        throw error::InitializationException(""+AT+" query failed", true);
+        throw error::InitializationException("XML query failed", AT, true);
     //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
 
     query.setQuery("declare variable $url external;"
@@ -56,7 +74,7 @@ DatabaseProperties::DatabaseProperties(const QString &fileName) {
         }
     }
     else
-        throw error::InitializationException(""+AT+" query failed", true);
+        throw error::InitializationException("XML query failed", AT, true);
     //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
 
     query.setQuery("declare variable $url external;"
@@ -69,7 +87,7 @@ DatabaseProperties::DatabaseProperties(const QString &fileName) {
         }
     }
     else
-        throw error::InitializationException(""+AT+" query failed", true);
+        throw error::InitializationException("XML query failed", AT, true);
     //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
 
     query.setQuery("declare variable $url external;"
@@ -82,7 +100,7 @@ DatabaseProperties::DatabaseProperties(const QString &fileName) {
         }
     }
     else
-        throw error::InitializationException(""+AT+" query failed", true);
+        throw error::InitializationException("XML query failed", AT, true);
     //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
 
     query.setQuery("declare variable $url external;"
@@ -93,12 +111,12 @@ DatabaseProperties::DatabaseProperties(const QString &fileName) {
             bool conversionOK;
             hostPort = xmlResult.toInt(&conversionOK);
             if(!conversionOK)
-                throw error::InitializationException(""+AT+" unable to convert hostport from string to integer", true);
+                throw error::InitializationException("unable to convert hostport from string to integer", AT, true);
             //qDebug() << "[DBInitRead::importDatabaseProperties] error: unable to convert hostport from string to integer";
         }
     }
     else
-        throw error::InitializationException(""+AT+" query failed", true);
+        throw error::InitializationException("XML query failed", AT, true);
     //qDebug() << "[DBInitRead::importDatabaseProperties] invalid query !";
     this->setDatabaseName(databaseName.trimmed());
     this->setHostAddress(hostAddress.trimmed());

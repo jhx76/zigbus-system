@@ -1,3 +1,21 @@
+/*
+    This file is part of Zigbus Home Automation API. 
+    Copyright (C) 2012 jhx
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef GENMESSAGE_H
 #define GENMESSAGE_H
 
@@ -23,7 +41,16 @@ typedef enum ParamKey {
     level,
     unit,
     text,
-    displaytext
+    displaytext,
+    initialize,
+    configure,
+    id,
+    id2,
+    type,
+    stype,
+    ref,
+    func,
+    position
 } ParamKey;
 
 /**
@@ -86,9 +113,6 @@ public:
         Information,
         Event,
         Ping,
-        PingResult,
-        Configuration,
-        Initialisation,
         Ack,
         HeartBeat
     } TypeMessage;
@@ -120,7 +144,7 @@ public:
     /**
 
       */
-    virtual QString toString();
+    virtual QString toString() const;
 
     /**
 
@@ -146,13 +170,33 @@ public:
 
       */
     static QString paramKeyAsString(gen::ParamKey key) {
-        if(key == gen::time) return "time";
-        if(key == gen::state) return "state";
-        if(key == gen::level) return "level";
-        if(key == gen::unit) return "unit";
-        if(key == gen::text) return "text";
-        if(key == gen::displaytext) return "display text";
+//        if(key == gen::time) return "time";
+//        else if(key == gen::state) return "state";
+//        else if(key == gen::level) return "level";
+//        else if(key == gen::unit) return "unit";
+//        else if(key == gen::text) return "text";
+//        else if(key == gen::displaytext) return "display text";
+//        else if(key == gen::type) return "type";
+//        else if(key == gen::stype) return "sub-type";
+//        else if(key == gen::id) return "id";
+
+        switch(key) {
+        case gen::time: return "time";
+        case gen::state: return "state";
+        case gen::level: return "level";
+        case gen::unit: return "unit";
+        case gen::text: return "text";
+        case gen::displaytext: return "display text";
+        case gen::id: return "id";
+        case gen::id2: return "id2";
+        case gen::type: return "type";
+        case gen::stype: return "sub-type";
+        case gen::ref: return "ref";
+        case gen::func: return "func";
+        default: return "unknown";
+        }
     }
+
 };
 
 #endif // GENMESSAGE_H

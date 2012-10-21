@@ -1,4 +1,22 @@
 
+/*
+    This file is part of Zigbus Home Automation API. 
+    Copyright (C) 2012 jhx
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "XAPMessage.h"
 #include "XAPNameValuePair.h"
 
@@ -46,12 +64,12 @@ XAPAddress& XAPAddress::operator=(const XAPAddress& other) {
 XAPAddress XAPAddress::fromString(const QString &src) {
     QString vendor = utils::getSousChaine(src, ".", 0);
     QString type = utils::getSousChaine(src, ".", 1);
-    QString location = utils::getSousChaine(src, ".", 2);
+    QString location = utils::getSousChaine(src, ".", 2).trimmed();
     if(location.contains(":"))
         location = utils::getSousChaine(location, ":", 0);
     QString instance = "";
     if(src.contains(":"))
-        instance = utils::getSousChaine(src, ":", 1);
+        instance = utils::getSousChaine(src, ":", 1).trimmed();
     return XAPAddress(vendor, type, location, instance);
 }
 
@@ -136,7 +154,7 @@ XAPMessage XAPMessage::fromString(const QString &str)
                 bool ok;
                 rsltMessage.setHopCount(nvpair.getValue().toInt(&ok));
                 if(!ok)
-                    throw QString("[XAPMessage::fromString] bad hop count value");
+                    throw XAPMessageException(str, "bad hop count value", AT);
             }
             else if(nvpair.getName() == STR_XAPUID)
                 rsltMessage.setUid(nvpair.getValue());
@@ -170,7 +188,7 @@ XAPMessage XAPMessage::fromString(const QString &str)
         }
     }
     else
-        throw QString("Cannot build the XAPMessage from string :" + str);
+        throw XAPMessageException(str, "Cannot build the XAPMessage", AT);
     return rsltMessage;
 }
 
@@ -252,13 +270,13 @@ XAPAddress XAPMessage::getXAPSource() const {
     XAPAddress xapsource;
     xapsource.setVendor(utils::getSousChaine(getSource(), ".", 0));
     if(xapsource.getVendor().isEmpty())
-        throw error::SysException("error: empty vendor in xap source address");
+        throw error::SysException("error: empty vendor in xap source address", AT);
     xapsource.setType(utils::getSousChaine(getSource(), ".", 1));
     if(xapsource.getType().isEmpty())
-        throw error::SysException("error: empty type in xap source address");
+        throw error::SysException("error: empty type in xap source address", AT);
     xapsource.setLocation(utils::getSousChaine(getSource(), ".", 2));
     if(xapsource.getLocation().isEmpty())
-        throw error::SysException("error: empty location in xap source address");
+        throw error::SysException("error: empty location in xap source address", AT);
     if(xapsource.getLocation().contains(":"))
         xapsource.setLocation(utils::getSousChaine(xapsource.getLocation(), ":", 0));
     xapsource.setInstance(utils::getSousChaine(getSource(), ":", 1, false));
@@ -271,13 +289,13 @@ XAPAddress XAPMessage::getXAPTarget() const {
     XAPAddress xaptarget;
     xaptarget.setVendor(utils::getSousChaine(getTarget(), ".", 0));
     if(xaptarget.getVendor().isEmpty())
-        throw error::SysException("error: empty vendor in xap target address");
+        throw error::SysException("error: empty vendor in xap target address", AT);
     xaptarget.setType(utils::getSousChaine(getTarget(), ".", 1));
     if(xaptarget.getType().isEmpty())
-        throw error::SysException("error: empty type in xap target address");
+        throw error::SysException("error: empty type in xap target address", AT);
     xaptarget.setLocation(utils::getSousChaine(getTarget(), ".", 2));
     if(xaptarget.getLocation().isEmpty())
-        throw error::SysException("error: empty location in xap target address");
+        throw error::SysException("error: empty location in xap target address", AT);
     if(xaptarget.getLocation().contains(":"))
         xaptarget.setLocation(utils::getSousChaine(xaptarget.getLocation(), ":", 0));
     xaptarget.setInstance(utils::getSousChaine(getTarget(), ":", 1));

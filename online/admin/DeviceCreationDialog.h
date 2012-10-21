@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QList>
 #include <QDebug>
+#include <QMessageBox>
 
 #include <core/Error.h>
 #include <core/Module.h>
@@ -40,10 +41,13 @@ private:
 
     QList<ZigbusNetworkModel> zigbusNetworkList;
 
+    void displayPinsForMainSelection(Module* module);
+
+
 public:
     explicit DeviceCreationDialog(QList<Module> *moduleList = NULL, QueryBean* queryBean = NULL, QWidget *parent = 0);
 
-    virtual ~DeviceCreationDialog();
+    ~DeviceCreationDialog();
 
     void initialize();
 
@@ -51,7 +55,14 @@ public:
 
     void setPtrModuleList(QList<Module>* ptr) { this->moduleList = ptr; }
 
+public slots:
+    void saveAndAccept();
 
+    void onModuleSelectionChanged(QString moduleLabel);
+
+    void onPin2RadioChanged(bool);
+
+    void onPin1RadioChanged(bool);
 
 };
 

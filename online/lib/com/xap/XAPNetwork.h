@@ -1,3 +1,22 @@
+/*
+    This file is part of Zigbus Home Automation API. 
+    Copyright (C) 2012 jhx
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 #ifndef _XAPNETWORK_H
 #define _XAPNETWORK_H
 
@@ -10,7 +29,7 @@
 #include <com/common/GenMessageFactory.h>
 
 // les types de messages generiques
-#include <com/common/ConfigurationMessage.h>
+//#include <com/common/ConfigurationMessage.h>
 #include <com/common/CommandMessage.h>
 #include <com/common/EventMessage.h>
 #include <com/common/InformationMessage.h>
@@ -19,6 +38,7 @@
 
 #include <com/xap/XAPHeartBeatMessage.h>
 #include <com/xap/XAPMessage.h>
+#include <com/xap/XAPMessageException.h>
 #include <core/SysUtils.h>
 #include <core/DBInitRead.h>
 
@@ -105,7 +125,9 @@ public:
     /**
 
       */
-    virtual void initialize(const QString& address="");
+    virtual void initialize(const QString& address = "");
+
+    virtual void run();
 
     /**
 

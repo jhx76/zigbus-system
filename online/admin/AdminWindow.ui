@@ -14,8 +14,8 @@
    <string>AdminWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0">
      <widget class="QFrame" name="buttonFrame">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -116,9 +116,28 @@
       </layout>
      </widget>
     </item>
-    <item>
+    <item row="0" column="1" rowspan="2">
      <widget class="QWidget" name="widget" native="true">
       <layout class="QGridLayout" name="centralLayout"/>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="appIconLabel">
+      <property name="minimumSize">
+       <size>
+        <width>64</width>
+        <height>64</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>64</width>
+        <height>64</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
      </widget>
     </item>
    </layout>
@@ -142,6 +161,9 @@
      </property>
      <addaction name="actionNewDevice"/>
      <addaction name="actionNewModule"/>
+     <addaction name="separator"/>
+     <addaction name="actionNewType"/>
+     <addaction name="actionNewLocation"/>
     </widget>
     <addaction name="menuNew"/>
     <addaction name="separator"/>
@@ -197,6 +219,16 @@
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About Qt...</string>
+   </property>
+  </action>
+  <action name="actionNewType">
+   <property name="text">
+    <string>Type</string>
+   </property>
+  </action>
+  <action name="actionNewLocation">
+   <property name="text">
+    <string>Location</string>
    </property>
   </action>
  </widget>

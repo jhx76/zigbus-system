@@ -5,11 +5,13 @@
 #include <core/AbstractApplication.h>
 #include <core/DBInitRead.h>
 #include <core/SysUtils.h>
+#include <core/SingleDAT.h>
 #include <QString>
 #include <com/xap/XAPNetwork.h>
 #include <com/xap/XAPHeartBeatMessage.h>
 #include <com/xap/XAPMessage.h>
-
+#include <com/zbp/ZbpMessage.h>
+#include <com/zbp/ZbpNetwork.h>
 #include <com/common/GenMessage.h>
 
 /**
@@ -29,8 +31,10 @@ class BridgeDaemon : public QObject, AbstractApplication
     Q_OBJECT
 private:
     XAPNetwork* xapNetwork;
-
+    ZbpNetwork* zbpNetwork;
     DBInitRead* iniParam;
+    SingleDAT* DAT;
+    QueryBean* queryBean;
 
 public:
     BridgeDaemon(QObject* parent = 0);
@@ -43,6 +47,11 @@ public slots:
     void processMessage(GenMessage* message, QString networkId);
 
     void display(QString message);
+
+signals:
+    void messageForDevices(GenMessage* message);
+
+    void messageForApps(GenMessage* message);
 
 };
 

@@ -6,10 +6,26 @@
 
 QT += core gui sql xml xmlpatterns debug
 
-TARGET = admin
 TEMPLATE = app
 
 INCLUDEPATH += ../lib
+
+OBJECTS_DIR = ../../build/admin/obj
+
+MOC_DIR = ../../build/admin/moc
+
+DESTDIR = ../../bin
+
+CONFIG(debug, debug|release) {
+    TARGET = admind
+    DEFINES += ZB_DEBUG
+}
+else {
+    TARGET = admin
+}
+
+
+
 
 SOURCES += main.cpp\
         AdminWindow.cpp \
@@ -27,7 +43,18 @@ SOURCES += main.cpp\
     ../lib/com/xap/XAPBlock.cpp \
     ../lib/core/ModuleTreeItem.cpp \
     ../lib/core/DeviceTreeItem.cpp \
-    ../lib/com/common/GenAddress.cpp
+    ../lib/com/common/GenAddress.cpp \
+    DeviceEditionPanel.cpp \
+    ModuleEditionPanel.cpp \
+    DeviceCreationDialog.cpp \
+    ../lib/core/QueryBean.cpp \
+    ../lib/core/model/LocationModel.cpp \
+    ../lib/core/model/SymbolicTypeModel.cpp \
+    ../lib/core/model/SymbolicNetworkModel.cpp \
+    ../lib/core/model/HardwareTypeModel.cpp \
+    ../lib/core/model/ZigbusNetworkModel.cpp \
+    DatabaseConnectionDialog.cpp \
+    ../lib/com/xap/XAPMessageException.cpp
 
 HEADERS  += AdminWindow.h \
     DeviceAdministrationPanel.h \
@@ -44,7 +71,22 @@ HEADERS  += AdminWindow.h \
     ../lib/com/xap/XAPBlock.h \
     ../lib/core/ModuleTreeItem.h \
     ../lib/core/DeviceTreeItem.h \
-    ../lib/com/common/GenAddress.h
+    ../lib/com/common/GenAddress.h \
+    DeviceEditionPanel.h \
+    ModuleEditionPanel.h \
+    DeviceCreationDialog.h \
+    ../lib/core/QueryBean.h \
+    ../lib/core/model/LocationModel.h \
+    ../lib/core/model/SymbolicTypeModel.h \
+    ../lib/core/model/SymbolicNetworkModel.h \
+    ../lib/core/model/HardwareTypeModel.h \
+    ../lib/core/model/ZigbusNetworkModel.h \
+    DatabaseConnectionDialog.h \
+    ../lib/com/xap/XAPMessageException.h
 
 FORMS    += AdminWindow.ui \
-    DeviceAdministrationPanel.ui
+    DeviceAdministrationPanel.ui \
+    DeviceEditionPanel.ui \
+    ModuleEditionPanel.ui \
+    DeviceCreationDialog.ui \
+    DatabaseConnectionDialog.ui

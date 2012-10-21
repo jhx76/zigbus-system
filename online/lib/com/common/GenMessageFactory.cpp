@@ -1,7 +1,33 @@
+/*
+    This file is part of Zigbus Home Automation API. 
+    Copyright (C) 2012 jhx
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "GenMessageFactory.h"
+SingleDAT* GenMessageFactory::deviceAddressTranslator = NULL;
 
 GenMessage* GenMessageFactory::createMessage(ZbpMessage &message) {
-    return NULL;
+    if(deviceAddressTranslator != NULL) {
+        if(message.getOrder() == zigbus::order_INITIALIZE)
+            return createEventMessage(message);
+        else
+            return createInformationMessage(message);
+    }
+    else
+        return NULL;
 }
 
 //------------------------------------------------------------
@@ -46,7 +72,7 @@ GenMessage* GenMessageFactory::createMessage(XAPMessage &message) {
 //------------------------------------------------------------
 
 CommandMessage* GenMessageFactory::createCommandMessage(ZbpMessage &message) {
-    return NULL;
+   return NULL;
 }
 
 //------------------------------------------------------------
@@ -72,8 +98,8 @@ CommandMessage* GenMessageFactory::createCommandMessage(XAPMessage &message) {
 
     for(int i = 0; i < message.count(); i++) {
 
-        if(message.at(i).getBlockname() == "cmd") {
-
+        if(message.at(i).getBlockname() == "output.state") {
+            rsltMessage->setCommandType(message.at(i).getBlockname());
             for(int i2 = 0; i2 < message.at(i).count(); i2++) {
                 XAPNameValuePair nvpair = message.at(i).at(i2);
                 if(nvpair.getName() == "state") {
@@ -81,26 +107,49 @@ CommandMessage* GenMessageFactory::createCommandMessage(XAPMessage &message) {
                         rsltMessage->setParam(gen::state, "on");
                     else if(nvpair.getValue() == "off")
                         rsltMessage->setParam(gen::state, "off");
+                    else if(nvpair.getValue() == "toogle")
+                        rsltMessage->setParam(gen::state, "toogle");
+                    else
+                        rsltMessage->setParam(gen::state, nvpair.getValue());
                 }
-                else if(nvpair.getName() == "time") {
+                else if(nvpair.getName() == "time")
                     rsltMessage->setParam(gen::time, nvpair.getValue());
-                    for(int i3 = 0; i3 < message.at(i).count(); i3++) {
-                        XAPNameValuePair nvunit = message.at(i).at(i3);
-                        if(nvunit.getName() == "unit")
-                            rsltMessage->setParam(gen::unit, nvunit.getValue());
-                    }
-                }
-                else if(nvpair.getName() == "text") {
+                else if(nvpair.getName() == "unit")
+                    rsltMessage->setParam(gen::unit, nvpair.getValue());
+                else if(nvpair.getName() == "text")
                     rsltMessage->setParam(gen::text, nvpair.getValue());
-                }
-                else if(nvpair.getName() == "level"){
+                else if(nvpair.getName() == "level")
                     rsltMessage->setParam(gen::level, nvpair.getValue());
-                }
-                else if(nvpair.getName() == "displaytext") {
+                else if(nvpair.getName() == "displaytext")
                     rsltMessage->setParam(gen::displaytext, nvpair.getValue());
-                }
+                else if(nvpair.getName() == "position")
+                    rsltMessage->setParam(gen::position, nvpair.getValue());
                 else {
-
+                    qDebug() << "unknown parameter : " + nvpair.getName()+"...";
+                }
+            }
+        }
+        else if(message.at(i).getBlockname() == "configuration") {
+            rsltMessage->setCommandType(message.at(i).getBlockname());
+            for(int i2 = 0; i2 < message.at(i).count(); i2++) {
+                XAPNameValuePair nvpair = message.at(i).at(i2);
+                if(nvpair.getName() == "id" || nvpair.getName() == "alter+" || nvpair.getName() == "idcmd") {
+                    rsltMessage->setParam(gen::id, nvpair.getValue());
+                }
+                else if(nvpair.getName() == "id2" || nvpair.getName() == "alter-" || nvpair.getName() == "idpuis") {
+                    rsltMessage->setParam(gen::id2, nvpair.getValue());
+                }
+                else if(nvpair.getName() == "type") {
+                    rsltMessage->setParam(gen::type, nvpair.getValue());
+                }
+                else if(nvpair.getName() == "stype") {
+                    rsltMessage->setParam(gen::stype, nvpair.getValue());
+                }
+                else if(nvpair.getName() == "ref") {
+                    rsltMessage->setParam(gen::ref, nvpair.getValue());
+                }
+                else if(nvpair.getName() == "state") {
+                    rsltMessage->setParam(gen::state, nvpair.getValue());
                 }
             }
         }
@@ -125,6 +174,19 @@ QueryMessage* GenMessageFactory::createQueryMessage(XAPMessage &message) {
                           message.getXAPTarget().getLocation(),
                           message.getXAPTarget().getInstance());
         rsltMessage = new QueryMessage(source, target);
+        for(int i = 0; i < message.count(); i++) {
+            if(message.elementAt(i).getBlockname() == "request") {
+                for(int i2 = 0; i2 < message.elementAt(i).count(); i2++) {
+                    XAPNameValuePair& nvpair = message.elementAt(i).elementAt(i2);
+                    if(nvpair.getName() == "stype") {
+                        rsltMessage->setParam(gen::stype, nvpair.getValue());
+                    }
+
+                }
+
+            }
+        }
+
     }
     catch(const error::SysException& exception) {
         qDebug() << exception.getMessage();
@@ -195,8 +257,6 @@ InformationMessage* GenMessageFactory::createInformationMessage(XAPMessage &mess
 //------------------------------------------------------------
 
 InformationMessage* GenMessageFactory::createInformationMessage(ZbpMessage &message) {
-
-
     return NULL;
 }
 
@@ -255,7 +315,25 @@ EventMessage* GenMessageFactory::createEventMessage(XAPMessage &message) {
 //------------------------------------------------------------
 
 EventMessage* GenMessageFactory::createEventMessage(ZbpMessage &message) {
-    return NULL;
+
+    if(message.getOrder() == zigbus::order_INITIALIZE) {
+        EventMessage* resultMessage = NULL;
+        try {
+            GenAddress address = deviceAddressTranslator->find(message.getTargetAddress());
+            resultMessage = new EventMessage(address);
+            resultMessage->setParam(gen::state, "on");
+            resultMessage->setTypeEvent("init");
+            return resultMessage;
+        }
+        catch(const QString& exception) {
+            qDebug() << exception;
+            if(resultMessage != NULL)
+                delete resultMessage;
+            return NULL;
+        }
+    }
+    else
+        return NULL;
 }
 
 //-------------------------------------------------------------

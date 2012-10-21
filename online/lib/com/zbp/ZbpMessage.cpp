@@ -1,16 +1,33 @@
 #include "ZbpMessage.h"
 
+/*
+    This file is part of Zigbus Home Automation API. 
+    Copyright (C) 2012 jhx
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 ZbpMessage::ZbpMessage() {
 
 }
 
 ZbpMessage::ZbpMessage(const QString &arg) {
     bool convertionOK = false;
-    int temp;
     QString src = arg.mid(6);
-    QString strAddress = arg.mid(0, 6); //2digits réseau + 5digits address
-    this->targetAddress = ZbpAddress(strAddress);
-
+    QString strAddress = arg.mid(0, 6); //2digits réseau + 4digits address
+    this->targetAddress = ZbpAddress(strAddress); // Adresse du module
 
     int value = src.toInt(&convertionOK, 16);
     if(!convertionOK)
@@ -19,51 +36,36 @@ ZbpMessage::ZbpMessage(const QString &arg) {
     int nbBitsRequired = 0;
     while(getPossibleMax(nbBitsRequired) < value)
         nbBitsRequired++;
-    /*
-      trame SERVO: should be 27bits
-      */
-    QBitArray completeArray(nbBitsRequired, false); /* Ordre + body */
+
+    QBitArray completeArray(nbBitsRequired, false); /* temporary bit tab: order + body */
     for(int i = 0; i < completeArray.size(); i++)
         completeArray[i] = value & (1 << i);
 
-    /*QString debug = "";
-    for(int i = 0; i < completeArray.size(); i++)
-        debug += (completeArray[i] ? "1" : "0");
-    qDebug() << AT+"complete array : "+debug;*/
-
-
-    //11000 00100110 1010000 0000000
     order = (ZigbusOrder)getBits(0, ZIGBUS_ORDER_ENCODSIZE, &completeArray);
     ZigbusDeviceType type;
 
-
+    //RESIZE BODY IF NECESSARY
     int bodySize = 0;
     switch(order)
     {
     case order_OFF:
         bodySize += 1;
-        if(getBits(ZIGBUS_ORDER_ENCODSIZE, 1, &completeArray) == 0)
-            bodySize += 7; /* direct */
-        else
-            bodySize += 5; /* typed */
+        if(getBits(ZIGBUS_ORDER_ENCODSIZE, 1, &completeArray) == 0) bodySize += 7; /* direct */
+        else bodySize += 5; /* typed */
         bodySize += 6 /* time value */ + 1 /* unité */;
         break;
 
     case order_ON:
         bodySize += 1;
-        if(getBits(ZIGBUS_ORDER_ENCODSIZE, 1, &completeArray) == 0)
-            bodySize += 7; /* direct */
-        else
-            bodySize += 5; /* typed */
+        if(getBits(ZIGBUS_ORDER_ENCODSIZE, 1, &completeArray) == 0) bodySize += 7; /* direct */
+        else bodySize += 5; /* typed */
         bodySize += 6 /* time value */ + 1 /* unité */;
         break;
 
     case order_TOOGLE:
         bodySize += 1;
-        if(getBits(ZIGBUS_ORDER_ENCODSIZE, 1, &completeArray) == 0)
-            bodySize += 7; /* direct */
-        else
-            bodySize += 5; /* typed */
+        if(getBits(ZIGBUS_ORDER_ENCODSIZE, 1, &completeArray) == 0) bodySize += 7; /* direct */
+        else bodySize += 5; /* typed */
         bodySize += 6 /* time value */ + 1 /* unité */;
         break;
 
@@ -85,7 +87,7 @@ ZbpMessage::ZbpMessage(const QString &arg) {
         bodySize += 14 /* Alter+ et Alter- */;
         break;
 
-    case order_STATE:
+    case order_STATUS:
         /* Pas de body dans ce cas, l'ordre se suffit a lui-meme */
         break;
 
@@ -111,6 +113,28 @@ ZbpMessage::ZbpMessage(const QString &arg) {
             bodySize += 20; /* cf. spec zbp */
         break;
 
+    case order_GATE:
+
+        break;
+
+    case order_MOTOR:
+        break;
+
+    case order_TIE:
+        break;
+
+    case order_REBOOT:
+        break;
+
+    case order_COUNT:
+        break;
+
+    case order_REALEASE:
+        break;
+
+    case order_ACK:
+        break;
+
     case order_CONFIGURE:
         bodySize += ZIGBUS_TYPE_ENCODSIZE;
         type = (ZigbusDeviceType)getBits(ZIGBUS_ORDER_ENCODSIZE, ZIGBUS_TYPE_ENCODSIZE, &completeArray);
@@ -126,6 +150,9 @@ ZbpMessage::ZbpMessage(const QString &arg) {
             bodySize += 14; //2sorties sur 7bits (command/puissance)
             bodySize += 8; //position (angle)
         }
+      //  else if(type == type_GATE) {
+
+      //  }
         else if(type == type_TOKEN) bodySize += 3; //P.Serie sur 3bits
         else if(type == type_REMOTE) bodySize += 3; //interruption sur 3bits
         else if(type == type_SERIAL) bodySize += 9; // 3 champs sur 3bits
@@ -134,8 +161,12 @@ ZbpMessage::ZbpMessage(const QString &arg) {
     case order_INITIALIZE:
         /* Pas de body dans ce cas, l'ordre se suffit a lui-meme */
         break;
+
+    default:
+        ;
     }
 
+    //Construction du message
     body.resize(bodySize);
     for(int i = 0; i < bodySize; i++) {
         if(i+ZIGBUS_ORDER_ENCODSIZE < completeArray.size()) {
@@ -146,12 +177,147 @@ ZbpMessage::ZbpMessage(const QString &arg) {
         }
     }
 
-/*
-    qDebug() << "bodySize => "+QString::number(body.size());
-    debug = "";
-    for(int i = 0; i < body.size(); i++)
-        debug += (body[i] ? "1" : "0");
-    qDebug() << AT+"body bin :"+debug;*/
+    //affectation de l'adresse
+    QString displayablePin, displayablePin2;
+    int encodedPin, encodedPin2;
+    switch(order)
+    {
+    case order_OFF:
+        encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        targetAddress.setMainPin(displayablePin);
+        targetAddress.setHardwareType(type_NUMERIC_OUTPUT);
+        break;
+
+    case order_ON:
+        encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        targetAddress.setMainPin(displayablePin);
+        targetAddress.setHardwareType(type_NUMERIC_OUTPUT);
+        break;
+
+    case order_TOOGLE:
+        encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        targetAddress.setMainPin(displayablePin);
+        targetAddress.setHardwareType(type_NUMERIC_OUTPUT);
+        break;
+
+    case order_SERVO:
+        encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        targetAddress.setMainPin(displayablePin);
+        encodedPin2 = getBits(ZIGBUS_PINID_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin2 = (encodedPin2 > 100 ? "S"+QString::number(encodedPin2) : "A"+QString::number(encodedPin2-100));
+        targetAddress.setOptionalPin(displayablePin2);
+        targetAddress.setHardwareType(type_SERVO);
+        break;
+
+    case order_TEXT:
+        break;
+
+    case order_PWM:
+        encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        targetAddress.setMainPin(displayablePin);
+        targetAddress.setHardwareType(type_PWM_OUTPUT);
+        break;
+
+    case order_HEATER:
+        encodedPin = getBits(ZIGBUS_HEATER_FUNC_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        targetAddress.setMainPin(displayablePin);
+        encodedPin2 = getBits(ZIGBUS_HEATER_FUNC_ENCODESIZE+ZIGBUS_PINID_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin2 = (encodedPin2 > 100 ? "S"+QString::number(encodedPin2) : "A"+QString::number(encodedPin2-100));
+        targetAddress.setOptionalPin(displayablePin2);
+        targetAddress.setHardwareType(type_HEATER);
+        break;
+
+    case order_STATUS:
+        break;
+
+    case order_SERIAL:
+        break;
+
+    case order_REMOTE:
+        break;
+
+    case order_PING:
+        break;
+
+    case order_TEMPERATURE:
+        encodedPin = getBits(ZIGBUS_SUBTYPE_ENCODESIZE+ZIGBUS_QR_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
+        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        targetAddress.setMainPin(displayablePin);
+        targetAddress.setHardwareType(type_TEMPERATURE);
+        break;
+
+    case order_GATE:
+
+        break;
+
+    case order_MOTOR:
+        break;
+
+    case order_TIE:
+        break;
+
+    case order_REBOOT:
+        break;
+
+    case order_COUNT:
+        break;
+
+    case order_REALEASE:
+        break;
+
+    case order_ACK:
+        break;
+
+    case order_CONFIGURE:
+        type = (ZigbusDeviceType)getBits(0, ZIGBUS_TYPE_ENCODSIZE, &body);
+        if(type == type_UNDEF)
+            throw QString(); /// @todo Gestion d'erreur
+        else if(type == type_NUMERIC_OUTPUT) {
+
+        }
+        else if(type == type_NUMERIC_INPUT) {
+
+        }
+        else if(type == type_PWM_OUTPUT) {
+
+        }
+        else if(type == type_ANALOGIC_INPUT) {
+
+        }
+        else if(type == type_LAMP) {
+
+        }
+        else if(type == type_HEATER) {
+
+        }
+        else if(type == type_TEMPERATURE) {
+
+        }
+        else if(type == type_SERVO) {
+
+        }
+        else if(type == type_TOKEN) {
+
+        }
+        else if(type == type_REMOTE) {
+
+        }
+        else if(type == type_SERIAL) {
+
+        }
+        break;
+
+    case order_INITIALIZE:
+        break;
+    }
+
+
 }
 
 
@@ -189,9 +355,11 @@ void ZbpMessage::setBits(int bIndex, int nbits, int value) {
         body.resize(bIndex+nbits);
 
     //Insertion de la valeur demandée
-    for(int i = bIndex; i < nbits; i++) {
-        body[i] = value & (1 << i);
+    for(int i = bIndex; i < bIndex+nbits; i++) {
+        int l = value & (1 << (i-bIndex));
+        body[i] = l;
     }
+    qDebug() << "message body is now " << this->displayAsBinary(this->body);
 }
 
 int ZbpMessage::getBits(int bIndex, int nbits, QBitArray const* srcArray) const {

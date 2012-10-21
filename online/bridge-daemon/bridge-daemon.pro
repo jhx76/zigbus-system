@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core xml xmlpatterns network sql debug
+QT       += core gui xml xmlpatterns network sql debug
 
 QT       -= gui
 
@@ -29,6 +29,23 @@ else {
     TARGET = bridge-daemon
 }
 
+unix|win32:HEADERS                 += ../lib/com/serial/qextserialbase.h \
+                          ../lib/com/serial/qextserialport.h \
+                          ../lib/com/serial/qextserialenumerator.h
+
+unix|win32:SOURCES                 += ../lib/com/serial/qextserialbase.cpp \
+                          ../lib/com/serial/qextserialport.cpp \
+                          ../lib/com/serial/qextserialenumerator.cpp
+
+unix:HEADERS           += ../lib/com/serial/posix_qextserialport.h
+unix:SOURCES           += ../lib/com/serial/posix_qextserialport.cpp
+unix:DEFINES           += _TTY_POSIX_
+
+
+win32:HEADERS          += ../lib/com/serial/win_qextserialport.h
+win32:SOURCES          += ../lib/com/serial/win_qextserialport.cpp
+win32:DEFINES          += _TTY_WIN_
+
 
 SOURCES += main.cpp \
     BridgeDaemon.cpp \
@@ -47,7 +64,6 @@ SOURCES += main.cpp \
     ../lib/com/common/GenMessage.cpp \
     ../lib/com/common/GenAddress.cpp \
     ../lib/com/common/EventMessage.cpp \
-    ../lib/com/common/ConfigurationMessage.cpp \
     ../lib/com/common/CommandMessage.cpp \
     ../lib/core/SysUtils.cpp \
     ../lib/core/Module.cpp \
@@ -56,7 +72,21 @@ SOURCES += main.cpp \
     ../lib/core/DBInitRead.cpp \
     ../lib/core/AbstractApplication.cpp \
     ../lib/com/zbp/ZbpMessage.cpp \
-    ../lib/com/zbp/ZbpAddress.cpp
+    ../lib/com/zbp/ZbpAddress.cpp \
+    ../lib/com/zbp/ZbpNetwork.cpp \
+    ../lib/core/SingleDAT.cpp \
+    ../lib/core/DatabaseProperties.cpp \
+    ../lib/com/xap/XAPNetworkProperties.cpp \
+    ../lib/com/xap/XAPException.cpp \
+    ../lib/com/xap/XAPMessageException.cpp \
+    ../lib/core/QueryBean.cpp \
+    ../lib/core/model/ZigbusNetworkModel.cpp \
+    ../lib/core/model/SymbolicTypeModel.cpp \
+    ../lib/core/model/SymbolicNetworkModel.cpp \
+    ../lib/core/model/LocationModel.cpp \
+    ../lib/core/model/HardwareTypeModel.cpp \
+    ../lib/com/zbp/zigbus.cpp \
+    ../lib/com/zbp/ZbpNetworkProperties.cpp \
 
 HEADERS += \
     BridgeDaemon.h \
@@ -76,7 +106,6 @@ HEADERS += \
     ../lib/com/common/GenMessage.h \
     ../lib/com/common/GenAddress.h \
     ../lib/com/common/EventMessage.h \
-    ../lib/com/common/ConfigurationMessage.h \
     ../lib/com/common/CommandMessage.h \
     ../lib/core/SysUtils.h \
     ../lib/core/QueryBean.h \
@@ -85,7 +114,19 @@ HEADERS += \
     ../lib/core/Device.h \
     ../lib/core/DBInitRead.h \
     ../lib/core/AbstractApplication.h \
-    ../doxygen-mainpage.h \
     ../lib/com/zbp/ZbpMessage.h \
     ../lib/com/zbp/ZbpAddress.h \
-    ../lib/com/zbp/zigbus.h
+    ../lib/com/zbp/zigbus.h \
+    ../lib/com/common/GenericProtocol.h \
+    ../lib/com/zbp/ZbpNetwork.h \
+    ../lib/core/SingleDAT.h \
+    ../lib/core/DatabaseProperties.h \
+    ../lib/com/xap/XAPNetworkProperties.h \
+    ../lib/com/xap/XAPException.h \
+    ../lib/com/xap/XAPMessageException.h \
+    ../lib/core/model/ZigbusNetworkModel.h \
+    ../lib/core/model/SymbolicTypeModel.h \
+    ../lib/core/model/SymbolicNetworkModel.h \
+    ../lib/core/model/LocationModel.h \
+    ../lib/core/model/HardwareTypeModel.h \
+    ../lib/com/zbp/ZbpNetworkProperties.h

@@ -5,12 +5,17 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QSqlError>
 #include <QList>
 #include <QString>
 #include <QDebug>
 #include <QVariant>
 
+#include <core/QueryBean.h>
+
+#include <DatabaseConnectionDialog.h>
 #include <DeviceAdministrationPanel.h>
+#include <DeviceCreationDialog.h>
 
 #include <core/Module.h>
 #include <core/Device.h>
@@ -23,20 +28,28 @@ class AdminWindow : public QMainWindow
 {
     Q_OBJECT
 private:
+    QueryBean *queryBean;
+
     Ui::AdminWindow *ui;
     QSqlDatabase database;
     QList<Module> moduleList;
+    QWidget* currentPanel;
 
 public:
     explicit AdminWindow(QWidget *parent = 0);
 
-    ~AdminWindow();
+    virtual ~AdminWindow();
 
     void initialize();
 
 public slots:
     void OnBtDeviceAdminClick();
 
+    void OnNewModuleTriggered();
+
+    void OnNewDeviceTriggered();
+
+    void connectDatabase(DatabaseProperties *properties);
 
 };
 

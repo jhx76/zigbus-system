@@ -1,9 +1,40 @@
+/*
+    This file is part of Zigbus Home Automation API.
+    Copyright (C) 2012 jhx
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef ZIGBUS_H
 #define ZIGBUS_H
 
-#define ZIGBUS_TYPE_ENCODSIZE   5
-#define ZIGBUS_ORDER_ENCODSIZE  5
+#define ZIGBUS_TYPE_ENCODSIZE                   5
+#define ZIGBUS_ORDER_ENCODSIZE                  5
+#define ZIGBUS_SUBTYPE_ENCODESIZE               3
+#define ZIGBUS_PINID_ENCODESIZE                 7
+#define ZIGBUS_QR_ENCODESIZE                    1
+#define ZIGBUS_NUMERIC_INISTATE_ENCODESIZE      1
+#define ZIGBUS_ANALOGIC_REFERENCE_ENCODESIZE    3
+#define ZIGBUS_PWM_INISTATE_ENCODESIZE          1
+#define ZIGBUS_ADTYPE_ENCODESIZE                1
+#define ZIGBUS_TIMEUNIT_ENCODESIZE              1
+#define ZIGBUS_TIME_ENCODESIZE                  12
+#define ZIGBUS_PWM_ORDER_ENCODESIZE             10
+#define ZIGBUS_HEATER_FUNC_ENCODESIZE           3
+#define ZIGBUS_RADPOSITION_ENCODESIZE           8
 
+#include <QString>
 /**
 
   */
@@ -41,11 +72,19 @@ typedef enum ZIGBUS_ORDER {
     order_TEXT = 0x04,
     order_PWM = 0x05,
     order_HEATER = 0x06,
-    order_STATE = 0x07,
+    order_STATUS = 0x07,
     order_SERIAL = 0x08,
     order_REMOTE = 0x09,
     order_PING = 0x0A,
     order_TEMPERATURE = 0x0B,
+    order_GATE = 0x0C,
+    order_MOTOR = 0x0D,
+    order_TIE = 0x0E,
+            //...
+    order_REBOOT = 0x1A,
+    order_COUNT = 0x1B,
+    order_REALEASE = 0x1C,
+    order_ACK = 0x1D,
     order_CONFIGURE = 0x1E,
     order_INITIALIZE = 0x1F
 } ZigbusOrder;
@@ -79,10 +118,35 @@ typedef enum ZIGBUS_DEVICE_TYPE {
     type_TOKEN = 0x09,
     type_REMOTE = 0x0A,
     type_SERIAL = 0x0B
+    //type_GATE = 0x0C
 } ZigbusDeviceType;
 
+typedef enum ZIGBUS_SUB_TYPE {
+    stype_UNDEF = 0x00,
+    stype_DHT11 = 0x01,
+    stype_LM35DZ = 0x02
+} ZigbusSubType;
 
+typedef enum ZIGBUS_ANALOGIC_REFERENCE {
+    aref_DEFAULT = 0x00,
+    aref_INTERNAL = 0x01,
+    aref_INTERNAL1V1 = 0x02,
+    aref_INTERNAL2V56 = 0x03,
+    aref_EXTERNAL = 0x04
+} ZigbusAnalogicReference;
 
+typedef enum ZIGBUS_HEATER_FUNCTION {
+    hfunc_UNDEF = 0x00,
+    hfunc_STOP = 0x01,
+    hfunc_ECO = 0x02,
+    hfunc_CONFORT2 = 0x05,
+    hfunc_CONFORT1 = 0x06,
+    hfunc_CONFORT = 0x07
+} ZigbusHeaterFunction;
+
+ZigbusHeaterFunction convertHeaterFunction(const QString& strFunc);
+
+ZigbusDeviceType convertDeviceType(const QString& strType);
 
 }
 

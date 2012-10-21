@@ -34,11 +34,15 @@
 #include <core/model/ZigbusNetworkModel.h>
 #include <core/Error.h>
 #include <core/SysUtils.h>
+#include <core/DatabaseProperties.h>
 
+#include <QDebug>
 class QueryBean
 {
 private:
     QSqlDatabase database;
+
+    DatabaseProperties databaseProperties;
 
 public:
     /**
@@ -46,6 +50,17 @@ public:
       */
     QueryBean(const QString& userName, const QString& password, const QString& databaseName,
               const QString& host, const QString& databaseDriver = "QMYSQL");
+
+
+    /**
+
+      */
+    QueryBean(const DatabaseProperties& databaseProperties);
+
+    /**
+      destructeur par defaut
+      */
+    ~QueryBean();
 
     /**
       @throw SqlException
@@ -76,6 +91,32 @@ public:
       @throw SqlException
       */
     QList<SymbolicNetworkModel> getAllSymbolicNetworks();
+
+    /**
+
+      */
+    int insertDevice(const Device& device);
+
+    /**
+
+      */
+    int updateDevice(const Device& deviceInEdition, const Device& tmpDevice);
+
+    /**
+
+      */
+    int updateModule(const Module& moduleInEdition, const Module& tmpModule);
+
+    /**
+
+      */
+    int deleteModule(const Module& moduleToDelete);
+
+    /**
+
+      */
+    int deleteDevice(const Device& deviceToDelete);
+
 };
 
 #endif // QUERYBEAN_H
