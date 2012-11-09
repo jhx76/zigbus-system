@@ -3,6 +3,8 @@
 
 AdminWindow::AdminWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::AdminWindow) {
     ui->setupUi(this);
+    qApp->setApplicationName("admin");
+    qApp->setApplicationVersion("1.0.1a");
     ui->mainToolBar->addAction(ui->actionSave);
     queryBean = NULL;
     currentPanel = NULL;
