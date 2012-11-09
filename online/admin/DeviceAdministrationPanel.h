@@ -24,6 +24,7 @@
 #include <DeviceEditionPanel.h>
 #include <ModuleEditionPanel.h>
 #include <DeviceCreationDialog.h>
+#include <ModuleCreationDialog.h>
 
 #include <QMessageBox>
 

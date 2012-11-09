@@ -127,7 +127,10 @@ public:
       */
     virtual void initialize(const QString& address = "");
 
-    virtual void run();
+    /**
+
+      */
+   // virtual void run();
 
     /**
 
@@ -143,6 +146,16 @@ public:
 
       */
     void setHbInterval(int i) { hbInterval = i; }
+
+    /**
+
+      */
+    virtual bool isListening();
+
+    /**
+
+      */
+    bool isHeartBeatSender() { return sendHeartBeat; }
 
 signals:
     /**
@@ -160,16 +173,14 @@ signals:
       */
     void displayMessageSent(QString);
 
+    void quitApplication();
+
+
 public slots:
     /**
 
       */
     virtual bool startListening();
-
-    /**
-
-      */
-    virtual bool isListening();
 
     /**
 
@@ -210,11 +221,6 @@ public slots:
       Send a global heart beat notifying the bridge is alive
       */
     void sendHeartBeatMessage(const GenAddress& source);
-
-    /**
-
-      */
-    bool isHeartBeatSender() { return sendHeartBeat; }
 
     /**
 

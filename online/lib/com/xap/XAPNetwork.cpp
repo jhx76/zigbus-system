@@ -55,7 +55,6 @@ XAPNetwork::~XAPNetwork(){
         }
         delete this->socket;
     }
-
     if(hbTimer) {
         hbTimer->stop();
         disconnect(this->hbTimer, SIGNAL(timeout()), this, SLOT(sendHeartBeatMessage()));
@@ -77,18 +76,17 @@ void XAPNetwork::stopListening() {
 }
 
 //----------------------------------------------------------------------------
-
+/*
 void XAPNetwork::run() {
     startListening();
     exec();
-}
+}*/
 
 //----------------------------------------------------------------------------
 
 bool XAPNetwork::startListening() {
     bool connected = false;
     emit toDisplay(QString(AT)+"connecting xAP Network...");
-
     while(!connected && port <= HUB_AREA_MAX) {
         connected = socket->bind(port, QUdpSocket::DefaultForPlatform);
         if(!connected) {
@@ -106,16 +104,14 @@ bool XAPNetwork::startListening() {
                        "|listening on "+QString::number(port)+
                        "|heartbeat interval "+QString::number(hbInterval)+
                        "|enable heartbeat: "+((sendHeartBeat)?"true":"false"));
-
         if(sendHeartBeat) {
-            //QObject::connect(this->hbTimer, SIGNAL(timeout()), this, SLOT(sendHeartBeatMessage()));
             sendHeartBeatMessage();
             this->hbTimer->start();
-            //emit toDisplay(AT+"hbTimer started ? "+(hbTimer->isActive()?"true":"false")+" ("+QString::number(hbTimer->interval())+")");
         }
     }
     else {
         emit toDisplay(AT+"Connection failed... Socket Already used.");
+        emit quitApplication();
     }
     return connected;
 }
@@ -130,12 +126,14 @@ bool XAPNetwork::isListening() {
 
 void XAPNetwork::sendMessage(GenMessage* message) {
     try {
-        //emit displayMessageSent(message->toString());
         XAPMessage messageToSend = translate(message);
         this->sendMessage(messageToSend);
     }
     catch(const error::TranslationException& exception) {
         qDebug() << exception.toString();
+    }
+    catch(const QString& exception) {
+        qDebug() << exception;
     }
 }
 
@@ -149,7 +147,6 @@ void XAPNetwork::sendMessage(const XAPMessage &message) {
         qDebug() << str;
         datagram = datagram.append(str);
         socket->writeDatagram(datagram.data(), datagram.size(), QHostAddress::Broadcast, STANDARD_PORT);
-        //emit toDisplay("message sent:\n"+message.toString());
     }
     else
         throw error::SysException(AT+"[XAPNetwork::sendMessage] Unable to send message: network is not listening");
@@ -176,7 +173,6 @@ void XAPNetwork::sendHeartBeatMessage(const GenAddress& source) {
 //----------------------------------------------------------------------------
 
 void XAPNetwork::sendHeartBeatMessage() {
-    //  qDebug() << AT << "enter in slot sendHeartBeatMessage()";
     if(listening) {
         XAPHeartBeatMessage message(appAddress.toString());
         message.setInterval(hbInterval);
@@ -193,9 +189,9 @@ QString XAPNetwork::lastError() {
 
 //----------------------------------------------------------------------------
 
-void XAPNetwork::processDatagram(QByteArray _datagram) {
+void XAPNetwork::processDatagram(QByteArray datagram) {
     try {
-        XAPMessage msgreceived = XAPMessage::fromString(QString(_datagram.constData()));
+        XAPMessage msgreceived = XAPMessage::fromString(QString(datagram.constData()));
         emit xapMsgReceived(msgreceived);
     }
     catch(QString & str) {
@@ -212,7 +208,6 @@ void XAPNetwork::readPendingDatagrams() {
         QHostAddress sender;
         quint16 senderPort;
         socket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
-        //qDebug() << datagram;
         processDatagram(datagram);
     }
 }
@@ -224,13 +219,16 @@ void XAPNetwork::processXAPMessage(XAPMessage xapmessage) {
         GenMessage* genMessage = GenMessageFactory::createMessage(xapmessage);
         if(genMessage != NULL) {
             emit this->messageReceived(genMessage, getNetworkId());
-            //QString str = "From: "+getNetworkId();
-            //str += genMessage->toString();
-            //emit this->toDisplay(str);
         }
     }
     catch(QString & str) {
         emit this->toDisplay(str);
+    }
+    catch(const error::SysException& exception) {
+        qDebug() << exception.toString();
+    }
+    catch(const error::TranslationException& exception) {
+        qDebug() << exception.toString();
     }
 }
 
@@ -264,49 +262,12 @@ XAPMessage XAPNetwork::translate(GenMessage *message) {
         xapMessage.setTarget(xaptarget);
 
         XAPBlock cmdBlock;
-        if(commandMessage->getCommandType() == "configuration")
-            cmdBlock.setBlockname("configuration");
-        else
-            cmdBlock.setBlockname("output.state");
-        if(commandMessage->contains(gen::state))
-            cmdBlock.append("state", commandMessage->getParam(gen::state));
-        if(commandMessage->contains(gen::level))
-            cmdBlock.append("level", commandMessage->getParam(gen::level));
-        if(commandMessage->contains(gen::time)) {
-            cmdBlock.append("time", commandMessage->getParam(gen::time));
-            if(commandMessage->contains(gen::unit))
-                cmdBlock.append("unit", commandMessage->getParam(gen::unit));
+        if(commandMessage->getCommandType() == "configuration") cmdBlock.setBlockname("configuration");
+        else cmdBlock.setBlockname("output.state");
+        for(int i = 0; i < commandMessage->paramCount(); i++) {
+            cmdBlock.append(commandMessage->elementAt(i).KeyAsString(),
+                            commandMessage->elementAt(i).value);
         }
-        if(commandMessage->contains(gen::position))
-            cmdBlock.append("position", commandMessage->getParam(gen::position));
-        if(commandMessage->contains(gen::func))
-            cmdBlock.append("func", commandMessage->getParam(gen::func));
-        if(commandMessage->contains(gen::type))
-            cmdBlock.append("type", commandMessage->getParam(gen::type));
-        if(commandMessage->contains(gen::stype))
-            cmdBlock.append("stype", commandMessage->getParam(gen::stype));
-        if(commandMessage->contains(gen::text))
-            cmdBlock.append("text", commandMessage->getParam(gen::text));
-        if(commandMessage->contains(gen::displaytext))
-            cmdBlock.append("displaytext", commandMessage->getParam(gen::displaytext));
-        if(commandMessage->contains(gen::id)) {
-            if(commandMessage->getTarget().getType() == "heater" || commandMessage->getTarget().getType() == "chauffage")
-                cmdBlock.append("alter+", commandMessage->getParam(id));
-            else if(commandMessage->getTarget().getType() == "servo")
-                cmdBlock.append("idcmd", commandMessage->getParam(id));
-            else
-                cmdBlock.append("id", commandMessage->getParam(id));
-        }
-        if(commandMessage->contains(gen::id2)) {
-            if(commandMessage->getTarget().getType() == "heater"
-                    || commandMessage->getTarget().getType() == "chauffage")
-                cmdBlock.append("alter-", commandMessage->getParam(id2));
-            else if(commandMessage->getTarget().getType() == "servo")
-                cmdBlock.append("idpuis", commandMessage->getParam(id2));
-            else
-                cmdBlock.append("id2", commandMessage->getParam(id2));
-        }
-
         xapMessage.append(cmdBlock);
     }
     else if(type == GenMessage::Event) {
@@ -331,11 +292,24 @@ XAPMessage XAPNetwork::translate(GenMessage *message) {
             throw error::TranslationException(message, "unknown event type", AT);
     }
     else if(type == GenMessage::Information) {
-        //! @todo InformationMessage translation to xAP
-        throw error::TranslationException(message, "Unable to translate InformationMessage with this version", AT);
+        InformationMessage* infoMessage = static_cast<InformationMessage*>(message);
+        if(!infoMessage)
+            throw error::TranslationException(message, "Bad identified type", AT);
+        xapMessage.setClass("xapbsc.info");
+        XAPBlock block(infoMessage->getTypeInfo());
+        for(int i = 0; i < infoMessage->paramCount(); i++) {
+            block.append(infoMessage->elementAt(i).KeyAsString(), infoMessage->elementAt(i).value);
+        }
+        xapMessage.append(block);
+        xapsource = infoMessage->getSource().getVendor()+".";
+        xapsource += infoMessage->getSource().getType()+".";
+        xapsource += infoMessage->getSource().getLocation();
+        xapsource += (infoMessage->getSource().getInstance().isEmpty()
+                      ? ""
+                      : ":"+infoMessage->getSource().getInstance());
+        xapMessage.setSource(xapsource);
     }
     else if(type == GenMessage::Query) {
-        //! @todo QueryMessage translation to xAP
         throw error::TranslationException(message, "Unable to translate QueryMessage with this version", AT);
     }
     else

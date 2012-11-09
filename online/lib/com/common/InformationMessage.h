@@ -36,6 +36,11 @@ private:
       */
     QList<gen::Param> paramList;
 
+    /**
+
+      */
+    QString typeInfo;
+
 public:
     /**
 
@@ -101,6 +106,16 @@ public:
 
       */
     virtual QString toString() const;
+
+    /**
+
+      */
+    const QString& getTypeInfo() const { return typeInfo; }
+
+    /**
+
+      */
+    void setTypeInfo(const QString& typeInfo) { this->typeInfo = typeInfo; }
 };
 
 #endif // INFORMATIONMESSAGE_H

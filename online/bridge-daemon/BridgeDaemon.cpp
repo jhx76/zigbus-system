@@ -3,7 +3,8 @@
 BridgeDaemon::BridgeDaemon(QObject* parent) : QObject(parent), AbstractApplication()
 {
     qApp->setApplicationName("bridge-daemon");
-    qApp->setApplicationVersion("0.0.1a");
+    qApp->setApplicationVersion("1.0.0a");
+    //connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(clearAndQuit()));
     xapNetwork = NULL;
     DAT = NULL;
     queryBean = NULL;
@@ -23,7 +24,7 @@ void BridgeDaemon::initializeApplication() {
         connect(xapNetwork, SIGNAL(toDisplay(QString)), this, SLOT(display(QString)));
         xapNetwork->initialize();
         //xapNetwork->startListening();
-        xapNetwork->start();
+        //xapNetwork->start();
 
         //Creation du point d'acces pour le réseau de module zigbus
         queryBean = new QueryBean(iniParam->getDbProperties());
@@ -35,7 +36,10 @@ void BridgeDaemon::initializeApplication() {
         connect(zbpNetwork, SIGNAL(messageReceived(GenMessage*,QString)), this, SLOT(processMessage(GenMessage*,QString)));
         connect(zbpNetwork, SIGNAL(toDisplay(QString)), this, SLOT(display(QString)));
         zbpNetwork->initialize();
-        zbpNetwork->start();
+
+
+        zbpNetwork->startListening();
+        xapNetwork->startListening();
     }
     catch(const error::InitializationException &e) {
         qDebug() << e.toString();
@@ -52,15 +56,20 @@ void BridgeDaemon::initializeApplication() {
 void BridgeDaemon::clearAndQuit() {
     if(iniParam != NULL)
         delete iniParam;
-    if(xapNetwork != NULL)
+    if(xapNetwork != NULL) {
+        xapNetwork->stopListening();
         delete xapNetwork;
-    qApp->quit();
-    if(zbpNetwork != NULL)
+    }
+    if(zbpNetwork != NULL){
+        zbpNetwork->stopListening();
         delete zbpNetwork;
+    }
     if(DAT != NULL)
         delete DAT;
     if(queryBean != NULL)
         delete queryBean;
+    qDebug() << "exit application";
+    exit(0);
 }
 
 

@@ -47,6 +47,7 @@ void ModuleEditionPanel::initialize() {
     }
     ui->nbPinNumericEdit->setValue(tmpModule.getNumericIOCount());
     ui->nbPinAnalogicEdit->setValue(tmpModule.getAnalogIOCount());
+    ui->moduleIdEdit->setText(tmpModule.getLabel());
 }
 
 void ModuleEditionPanel::onSaveButtonClick() {

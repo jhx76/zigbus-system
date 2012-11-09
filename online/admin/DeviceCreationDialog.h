@@ -35,6 +35,8 @@ private:
 
     QList<HardwareTypeModel> hardwareTypeList;
 
+    QList<HardwareSubTypeModel> hardwareSubtypeList;
+
     QList<SymbolicTypeModel> symbolicTypeList;
 
     QList<SymbolicNetworkModel> symbolicNetworkList;
@@ -63,6 +65,8 @@ public slots:
     void onPin2RadioChanged(bool);
 
     void onPin1RadioChanged(bool);
+
+    void onHardwareTypeSelectionChanged(QString);
 
 };
 

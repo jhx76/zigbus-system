@@ -56,6 +56,11 @@ private:
       */
     ZigbusDeviceType hardwareType;
 
+    /**
+
+      */
+    ZigbusSubType subType;
+
 public:
     /**
 
@@ -124,6 +129,10 @@ public:
     ZigbusDeviceType getHardwareType() const { return hardwareType; }
 
     void setHardwareType(ZigbusDeviceType type) { hardwareType = type; }
+
+    ZigbusSubType getSubType() const { return subType; }
+
+    void setSubType(ZigbusSubType stype) { subType = stype; }
 };
 
 /**

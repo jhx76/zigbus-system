@@ -55,7 +55,7 @@ QList<Module> QueryBean::buildModuleList(const QString &networkId) {
 
     qDebug() << QString::number(moduleList.count())+" modules found.";
     for(int imod = 0; imod < moduleList.count(); imod++) {
-        QString sqry =  "SELECT main_pin, optional_pin, t_hardware_type.label AS hardware_type, "
+        QString sqry =  "SELECT main_pin, optional_pin, t_hardware_type.label AS hardware_type, subtype, "
                         "t_symbolic_type.label AS symbolic_type, t_symbolic_network.label AS symbolic_network, "
                         "t_location.label AS location, instance "
                         "FROM t_device "
@@ -78,6 +78,7 @@ QList<Module> QueryBean::buildModuleList(const QString &networkId) {
             tmpDevice.setPinId(queryDevice.value(queryDevice.record().indexOf("main_pin")).toString());
             tmpDevice.setOptionalId(queryDevice.value(queryDevice.record().indexOf("optional_pin")).toString());
             tmpDevice.setPinType(queryDevice.value(queryDevice.record().indexOf("hardware_type")).toString());
+            tmpDevice.setPinSubType(queryDevice.value(queryDevice.record().indexOf("subtype")).toString());
             tmpDevice.setPtrModule(&moduleList[imod]);
             moduleList[imod].append(tmpDevice);
 
@@ -218,7 +219,7 @@ QList<SymbolicNetworkModel> QueryBean::getAllSymbolicNetworks() {
 
 int QueryBean::insertDevice(const Device &device) {
     QString s =
-    "INSERT INTO t_device (et_module, et_symbolic_network, et_symbolic_type, et_hardware_type, et_location, instance, main_pin, optional_pin) "
+    "INSERT INTO t_device (et_module, et_symbolic_network, et_symbolic_type, et_hardware_type, et_location, instance, main_pin, optional_pin, subtype) "
     "VALUES ((SELECT id FROM t_module WHERE t_module.moduleid='"+device.getPtrModule()->getLabel()+"'), "
     "(SELECT id FROM t_symbolic_network WHERE t_symbolic_network.label='"+device.getVendor()+"'), "
     "(SELECT id FROM t_symbolic_type WHERE t_symbolic_type.label='"+device.getType()+"'), "
@@ -226,7 +227,8 @@ int QueryBean::insertDevice(const Device &device) {
     "(SELECT id FROM t_location WHERE t_location.label='"+device.getLocation()+"'), "
     "'"+device.getInstance()+"', "
     "'"+device.getPinId()+"', "
-    "'"+device.getOptionalId()+"');";
+    "'"+device.getOptionalId()+"', "
+            "'"+device.getPinSubType()+"');";
     QSqlQuery query(this->database);
     bool ok = query.exec(s);
     if(!ok)
@@ -254,7 +256,7 @@ int QueryBean::updateDevice(const Device &deviceInEdition, const Device &tmpDevi
             "AND t_device.instance = '"+deviceInEdition.getInstance()+"' "
             "AND t_device.main_pin='"+deviceInEdition.getPinId()+"' "
             "AND t_device.optional_pin='"+deviceInEdition.getOptionalId()+"' "
-            "AND t_device.optional_pin='' LIMIT 1;";
+            "AND t_device.subtype='"+deviceInEdition.getPinSubType()+"' LIMIT 1;";
     QSqlQuery queryId(s, database);
     if(queryId.next()) {
         deviceId =queryId.value(queryId.record().indexOf("id")).toInt(&ok);
@@ -271,7 +273,8 @@ int QueryBean::updateDevice(const Device &deviceInEdition, const Device &tmpDevi
             "               et_zigbus_netid=(SELECT id FROM t_zigbus_network WHERE label ='"+tmpDevice.getPtrModule()->getZigbusNetworkId()+"')), "
             "main_pin='"+tmpDevice.getPinId()+"', "
             "optional_pin='"+tmpDevice.getOptionalId()+"', "
-            "et_hardware_type=(SELECT id FROM t_hardware_type WHERE label='"+tmpDevice.getPinType()+"') "
+            "et_hardware_type=(SELECT id FROM t_hardware_type WHERE label='"+tmpDevice.getPinType()+"'), "
+            "t_device.subtype='"+tmpDevice.getPinSubType()+"' "
             "WHERE id="+QString::number(deviceId);
     QSqlQuery query(database);
     ok = query.exec(s);
@@ -321,7 +324,7 @@ int QueryBean::deleteDevice(const Device &deviceToDelete) {
             "AND et_hardware_type=(SELECT id FROM t_hardware_type WHERE label='"+deviceToDelete.getPinType()+"') "
             "AND main_pin='"+deviceToDelete.getPinId()+"' "
             "AND optional_pin='"+deviceToDelete.getOptionalId()+"' "
-            "AND optional_pin='' ";
+            "AND subtype='"+deviceToDelete.getPinSubType()+"'";
 
     QSqlQuery query(database);
     bool ret = query.exec(s);
@@ -338,5 +341,33 @@ int QueryBean::deleteModule(const Module &moduleToDelete) {
     if(!ret)
         throw error::SqlException(s, query.lastError().text(), AT);
     return query.numRowsAffected();
+}
 
+QList<HardwareSubTypeModel> QueryBean::getAllHardwareSubtypes() {
+    QString s = "SELECT t_hardware_subtype.id as subtypeid, subtype as subtypelabel, t_hardware_type.label as typelabel, t_hardware_subtype.description as description "
+            "FROM t_hardware_subtype "
+            "INNER JOIN t_hardware_type on t_hardware_subtype.et_hardware_type = t_hardware_type.id";
+    QSqlQuery query(s, database);
+    QList<HardwareSubTypeModel> resultList;
+    while(query.next()) {
+        HardwareSubTypeModel tmp;
+        tmp.setId(query.value(query.record().indexOf("subtypeid")).toInt());
+        tmp.setSubtype(query.value(query.record().indexOf("subtypelabel")).toString());
+        tmp.setCorrespondingType(query.value(query.record().indexOf("typelabel")).toString());
+        tmp.setDescription(query.value(query.record().indexOf("description")).toString());
+        resultList.append(tmp);
+    }
+    return resultList;
+}
+
+int QueryBean::insertModule(const Module &module) {
+    QString s = "INSERT INTO t_module (moduleid, nbpin_numeric, nbpin_analogic, description, et_zigbus_netid) "
+            "VALUES('"+module.getLabel()+"', "+QString::number(module.getNumericIOCount())+", "+
+            QString::number(module.getAnalogIOCount())+", '', "
+            "(SELECT id FROM t_zigbus_network WHERE label='"+module.getZigbusNetworkId()+"'))";
+    QSqlQuery query(database);
+    bool ok = query.exec(s);
+    if(!ok)
+        throw error::SqlException(s, query.lastError().text(), AT, false);
+    return query.numRowsAffected();
 }

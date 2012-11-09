@@ -118,7 +118,11 @@ void DeviceAdministrationPanel::onDeleteSelectedToolClick() {
             else {
                 try {
                     if(queryBean->deleteModule(*(moduleItem->getPtrModule())) > 0) {
-
+                        for(int i = 0; i < moduleList->count(); i++) {
+                            if(moduleList->at(i).getLabel() == (*(moduleItem->getPtrModule())).getLabel()
+                                    && moduleList->at(i).getZigbusNetworkId() == (*(moduleItem->getPtrModule())).getZigbusNetworkId())
+                                moduleList->removeAt(i);
+                        }
                         messageBox2.setText("L'objet a bien ete supprime !");
                         messageBox2.setStandardButtons(QMessageBox::Ok);
                         messageBox2.exec();
@@ -164,10 +168,9 @@ void DeviceAdministrationPanel::onDeleteSelectedToolClick() {
         }
         break;
     case QMessageBox::Cancel:
-        //Nothing to do
         break;
     default:
-      ;  //should never be reached
+      ;
     };
 }
 
@@ -222,7 +225,10 @@ void DeviceAdministrationPanel::onNewDeviceToolClick() {
 }
 
 void DeviceAdministrationPanel::onNewModuleToolClick() {
-
+    ModuleCreationDialog* dialog = new ModuleCreationDialog(queryBean, moduleList);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setVisible(true);
+    connect(dialog, SIGNAL(accepted()), this, SLOT(initialize()));
 }
 
 

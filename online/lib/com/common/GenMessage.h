@@ -44,13 +44,22 @@ typedef enum ParamKey {
     displaytext,
     initialize,
     configure,
+
     id,
     id2,
+    alterp,
+    alterm,
+    idpuis,
+    idcmd,
+
     type,
     stype,
     ref,
     func,
-    position
+    position,
+    temp,
+    hygro
+
 } ParamKey;
 
 /**
@@ -59,6 +68,34 @@ typedef enum ParamKey {
 typedef struct Param {
     ParamKey key;
     QString value;
+
+    QString KeyAsString() {
+        switch(this->key) {
+        case time: return "time";
+        case state: return "state";
+        case level: return "level";
+        case unit: return "unit";
+        case text: return "text";
+        case displaytext: return "displaytext";
+        case initialize: return "initialize";
+        case configure: return "configure";
+        case id: return "id";
+        case id2: return "id2";
+        case alterp: return "alter+";
+        case alterm: return "alter-";
+        case idpuis: return "idpuis";
+        case idcmd: return "idcmd";
+        case type: return "type";
+        case stype: return "stype";
+        case ref: return "ref";
+        case func: return "func";
+        case position: return "position";
+        case temp: return "temp";
+        case hygro: return "hygro";
+        default: return "";
+        };
+    }
+
 } Param;
 
 }

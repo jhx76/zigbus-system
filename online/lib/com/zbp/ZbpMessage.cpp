@@ -133,6 +133,71 @@ ZbpMessage::ZbpMessage(const QString &arg) {
         break;
 
     case order_ACK:
+        bodySize += ZIGBUS_ORDER_ENCODSIZE;
+
+        {//Des accolades juste pour dépiler les variables
+            ZigbusOrder order = (ZigbusOrder)getBits(ZIGBUS_ORDER_ENCODSIZE, ZIGBUS_ORDER_ENCODSIZE, &completeArray);
+            if(order == order_OFF || order == order_ON || order == order_TOOGLE) {
+                bodySize += 1;
+                if(getBits(ZIGBUS_ORDER_ENCODSIZE + ZIGBUS_ORDER_ENCODSIZE, 1, &completeArray) == 0) bodySize += 7; /* direct */
+                else bodySize += 5; /* typed */
+                bodySize += 6 /* time value */ + 1 /* unité */;
+            }
+            else if(order == order_SERVO) {
+                bodySize += ZIGBUS_RADPOSITION_ENCODESIZE;
+                bodySize += (ZIGBUS_PINID_ENCODESIZE * 2);
+            }
+            else if(order == order_TEXT) {
+
+            }
+            else if(order == order_PWM) {
+                bodySize += ZIGBUS_PINID_ENCODESIZE;
+                bodySize += ZIGBUS_PWM_ORDER_ENCODESIZE;
+            }
+            else if(order == order_HEATER) {
+                bodySize += ZIGBUS_HEATER_FUNC_ENCODESIZE;
+                bodySize += (2*ZIGBUS_PINID_ENCODESIZE);
+            }
+            else if(order == order_SERIAL) {
+
+            }
+            else if(order == order_REMOTE) {
+
+            }
+            else if(order == order_GATE) {
+
+            }
+            else if(order == order_MOTOR) {
+
+            }
+            else if(order == order_TIE) {
+
+            }
+            else if(order == order_REBOOT) {
+
+            }
+            else if(order == order_CONFIGURE) {
+                bodySize += ZIGBUS_TYPE_ENCODSIZE;
+                type = (ZigbusDeviceType)getBits(ZIGBUS_ORDER_ENCODSIZE*2, ZIGBUS_TYPE_ENCODSIZE, &completeArray);
+                if(type == type_UNDEF) throw QString(); //GERER ERREUR
+                else if(type == type_NUMERIC_OUTPUT) bodySize += 8; //1 sortie sur 7bits + etat sur 1bit (ON ou OFF)
+                else if(type == type_NUMERIC_INPUT) bodySize += 7; //1sortie sur 7bits
+                else if(type == type_PWM_OUTPUT) bodySize += 8; //1sortie sur 7bits + 1bit d'etat
+                else if(type == type_ANALOGIC_INPUT) bodySize += 10; //1sortie sur 7bits + reference sur 3bits
+                else if(type == type_LAMPE) throw QString(); //GERE ERREUR
+                else if(type == type_HEATER) bodySize += 14; //2 sorties chacune sur 7bits
+                else if(type == type_TEMPERATURE) bodySize += 10; //1 sortie sur 7bits + type capteur sur 3bits
+                else if(type == type_SERVO) {
+                    bodySize += 14; //2sorties sur 7bits (command/puissance)
+                }
+              //  else if(type == type_GATE) {
+
+              //  }
+                else if(type == type_TOKEN) bodySize += 3; //P.Serie sur 3bits
+                else if(type == type_REMOTE) bodySize += 3; //interruption sur 3bits
+                else if(type == type_SERIAL) bodySize += 9; // 3 champs sur 3bits
+            }
+        }
         break;
 
     case order_CONFIGURE:
@@ -141,14 +206,13 @@ ZbpMessage::ZbpMessage(const QString &arg) {
         if(type == type_UNDEF) throw QString(); //GERER ERREUR
         else if(type == type_NUMERIC_OUTPUT) bodySize += 8; //1 sortie sur 7bits + etat sur 1bit (ON ou OFF)
         else if(type == type_NUMERIC_INPUT) bodySize += 7; //1sortie sur 7bits
-        else if(type == type_PWM_OUTPUT) bodySize += 7; //1sortie sur 7bits
+        else if(type == type_PWM_OUTPUT) bodySize += 8; //1sortie sur 7bits+1bit d'etat
         else if(type == type_ANALOGIC_INPUT) bodySize += 10; //1sortie sur 7bits + reference sur 3bits
-        else if(type == type_LAMP) throw QString(); //GERE ERREUR
+        else if(type == type_LAMPE) throw QString(); //GERE ERREUR
         else if(type == type_HEATER) bodySize += 14; //2 sorties chacune sur 7bits
         else if(type == type_TEMPERATURE) bodySize += 10; //1 sortie sur 7bits + type capteur sur 3bits
         else if(type == type_SERVO) {
             bodySize += 14; //2sorties sur 7bits (command/puissance)
-            bodySize += 8; //position (angle)
         }
       //  else if(type == type_GATE) {
 
@@ -184,31 +248,31 @@ ZbpMessage::ZbpMessage(const QString &arg) {
     {
     case order_OFF:
         encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
         targetAddress.setMainPin(displayablePin);
         targetAddress.setHardwareType(type_NUMERIC_OUTPUT);
         break;
 
     case order_ON:
         encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
         targetAddress.setMainPin(displayablePin);
         targetAddress.setHardwareType(type_NUMERIC_OUTPUT);
         break;
 
     case order_TOOGLE:
         encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
         targetAddress.setMainPin(displayablePin);
         targetAddress.setHardwareType(type_NUMERIC_OUTPUT);
         break;
 
     case order_SERVO:
         encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
         targetAddress.setMainPin(displayablePin);
         encodedPin2 = getBits(ZIGBUS_PINID_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin2 = (encodedPin2 > 100 ? "S"+QString::number(encodedPin2) : "A"+QString::number(encodedPin2-100));
+        displayablePin2 = (encodedPin2 < 100 ? "S"+QString::number(encodedPin2) : "A"+QString::number(encodedPin2-100));
         targetAddress.setOptionalPin(displayablePin2);
         targetAddress.setHardwareType(type_SERVO);
         break;
@@ -218,17 +282,17 @@ ZbpMessage::ZbpMessage(const QString &arg) {
 
     case order_PWM:
         encodedPin = getBits(0, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
         targetAddress.setMainPin(displayablePin);
         targetAddress.setHardwareType(type_PWM_OUTPUT);
         break;
 
     case order_HEATER:
         encodedPin = getBits(ZIGBUS_HEATER_FUNC_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
         targetAddress.setMainPin(displayablePin);
         encodedPin2 = getBits(ZIGBUS_HEATER_FUNC_ENCODESIZE+ZIGBUS_PINID_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin2 = (encodedPin2 > 100 ? "S"+QString::number(encodedPin2) : "A"+QString::number(encodedPin2-100));
+        displayablePin2 = (encodedPin2 < 100 ? "S"+QString::number(encodedPin2) : "A"+QString::number(encodedPin2-100));
         targetAddress.setOptionalPin(displayablePin2);
         targetAddress.setHardwareType(type_HEATER);
         break;
@@ -247,9 +311,10 @@ ZbpMessage::ZbpMessage(const QString &arg) {
 
     case order_TEMPERATURE:
         encodedPin = getBits(ZIGBUS_SUBTYPE_ENCODESIZE+ZIGBUS_QR_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
-        displayablePin = (encodedPin > 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+        displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
         targetAddress.setMainPin(displayablePin);
         targetAddress.setHardwareType(type_TEMPERATURE);
+        targetAddress.setSubType((ZigbusSubType)getBits(0, ZIGBUS_SUBTYPE_ENCODESIZE));
         break;
 
     case order_GATE:
@@ -272,45 +337,104 @@ ZbpMessage::ZbpMessage(const QString &arg) {
         break;
 
     case order_ACK:
+    {//Des accolades juste pour dépiler les variables
+        ZigbusOrder order = (ZigbusOrder)getBits(ZIGBUS_ORDER_ENCODSIZE, ZIGBUS_ORDER_ENCODSIZE, &completeArray);
+        if(order == order_OFF || order == order_ON || order == order_TOOGLE) {
+            encodedPin = getBits(ZIGBUS_ORDER_ENCODSIZE+ZIGBUS_ADTYPE_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
+            displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+            targetAddress.setMainPin(displayablePin);
+            targetAddress.setHardwareType(type_NUMERIC_OUTPUT);
+        }
+        else if(order == order_SERVO) {
+            encodedPin = getBits(ZIGBUS_ORDER_ENCODSIZE+ZIGBUS_RADPOSITION_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
+            displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+            targetAddress.setMainPin(displayablePin);
+            encodedPin2 = getBits(ZIGBUS_ORDER_ENCODSIZE+ZIGBUS_PINID_ENCODESIZE+ZIGBUS_RADPOSITION_ENCODESIZE
+                                  , ZIGBUS_PINID_ENCODESIZE);
+            displayablePin2 = (encodedPin2 < 100 ? "S"+QString::number(encodedPin2) : "A"+QString::number(encodedPin2-100));
+            targetAddress.setOptionalPin(displayablePin2);
+            targetAddress.setHardwareType(type_SERVO);
+        }
+        else if(order == order_TEXT) {
+
+        }
+        else if(order == order_PWM) {
+            encodedPin = getBits(ZIGBUS_ORDER_ENCODSIZE, ZIGBUS_PINID_ENCODESIZE);
+            displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+            targetAddress.setMainPin(displayablePin);
+            targetAddress.setHardwareType(type_PWM_OUTPUT);
+        }
+        else if(order == order_HEATER) {
+            encodedPin = getBits(ZIGBUS_ORDER_ENCODSIZE + ZIGBUS_HEATER_FUNC_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
+            displayablePin = (encodedPin < 100 ? "S"+QString::number(encodedPin) : "A"+QString::number(encodedPin-100));
+            targetAddress.setMainPin(displayablePin);
+            encodedPin2 = getBits(ZIGBUS_ORDER_ENCODSIZE+ZIGBUS_HEATER_FUNC_ENCODESIZE+ZIGBUS_PINID_ENCODESIZE, ZIGBUS_PINID_ENCODESIZE);
+            displayablePin2 = (encodedPin2 < 100 ? "S"+QString::number(encodedPin2) : "A"+QString::number(encodedPin2-100));
+            targetAddress.setOptionalPin(displayablePin2);
+            targetAddress.setHardwareType(type_HEATER);
+        }
+        else if(order == order_SERIAL) {
+
+        }
+        else if(order == order_REMOTE) {
+
+        }
+        else if(order == order_GATE) {
+
+        }
+        else if(order == order_MOTOR) {
+
+        }
+        else if(order == order_TIE) {
+
+        }
+        else if(order == order_REBOOT) {
+
+        }
+        else if(order == order_CONFIGURE) {
+            bodySize += ZIGBUS_TYPE_ENCODSIZE;
+            type = (ZigbusDeviceType)getBits(ZIGBUS_ORDER_ENCODSIZE*2, ZIGBUS_TYPE_ENCODSIZE, &completeArray);
+            if(type == type_UNDEF) throw QString(); //GERER ERREUR
+            else if(type == type_NUMERIC_OUTPUT) {
+
+            }
+            else if(type == type_NUMERIC_INPUT) {
+
+            }
+            else if(type == type_PWM_OUTPUT) {
+
+            }
+            else if(type == type_ANALOGIC_INPUT) {
+
+            }
+            else if(type == type_LAMPE) {
+
+            }
+            else if(type == type_HEATER) {
+
+            }
+            else if(type == type_TEMPERATURE) {
+
+            }
+            else if(type == type_SERVO) {
+
+            }
+            else if(type == type_TOKEN) {
+
+            }
+            else if(type == type_REMOTE) {
+
+            }
+            else if(type == type_SERIAL) {
+
+            }
+        }
+    }
+
+
         break;
 
     case order_CONFIGURE:
-        type = (ZigbusDeviceType)getBits(0, ZIGBUS_TYPE_ENCODSIZE, &body);
-        if(type == type_UNDEF)
-            throw QString(); /// @todo Gestion d'erreur
-        else if(type == type_NUMERIC_OUTPUT) {
-
-        }
-        else if(type == type_NUMERIC_INPUT) {
-
-        }
-        else if(type == type_PWM_OUTPUT) {
-
-        }
-        else if(type == type_ANALOGIC_INPUT) {
-
-        }
-        else if(type == type_LAMP) {
-
-        }
-        else if(type == type_HEATER) {
-
-        }
-        else if(type == type_TEMPERATURE) {
-
-        }
-        else if(type == type_SERVO) {
-
-        }
-        else if(type == type_TOKEN) {
-
-        }
-        else if(type == type_REMOTE) {
-
-        }
-        else if(type == type_SERIAL) {
-
-        }
         break;
 
     case order_INITIALIZE:

@@ -33,9 +33,10 @@
 #include <com/zbp/ZbpMessage.h>
 #include <com/zbp/ZbpAddress.h>
 #include <com/zbp/ZbpNetworkProperties.h>
-#include <com/serial/qextserialport.h>
 
 #include <com/common/GenMessageFactory.h>
+
+#include <qextserialport.h>
 
 class ZbpNetwork : public GenNetwork
 {
@@ -45,12 +46,11 @@ private:
 
     ZbpNetworkProperties properties;
 
+    ZbpMessage convertAndFreeMemory(GenMessage* message);
+
     QextSerialPort* modem;
 
-    /**
-
-      */
-    ZbpMessage convertAndFreeMemory(GenMessage* message);
+    QString waitingData;
 
 public:
     /**
@@ -70,7 +70,7 @@ public:
         }
     }
 
-    void run();
+   // virtual void run();
 
     /**
 
@@ -103,7 +103,46 @@ public:
 
     void test() {
         //QString s = "0000011F"; //trame init module 0001
-        QString s = "0000021F"; //trame init module 0002
+        //QString s = "0000021F"; //trame init module 0002
+
+        //   H64%    8C°    S1    R  DHT11  temp
+        // 1000000 001000 0000001 1   001   01011
+        //QString s = "0000011008032B";
+
+        //Trame ACK.configure temp DHT11 M01 S1
+        //QString s = "00000149FDD";
+
+        //Trame ACK.configure numeric_output M01 S2 (OFF)
+        //QString s = "000001207DD";
+
+        //Trame ACK.configure lave-vaisselle (numeric_output) M02 S3 (OFF)
+        //QString s = "000002307DD";
+
+        //Trame ACK.configure heater M01 A2 S4
+        //QString s = "0000011331BDD";
+
+        //Trame ACK.configure pwm M01 S5 (OFF)
+        //QString s = "00000150FDD";
+
+        //Trame ACK.configure Servo M01 S9/S10
+        //QString s = "000001284A3DD";
+
+        //Trame ACK.command OFF M01 S2
+        //QString s = "000001101D";
+
+        //Trame ACK.command ON M01 S2
+        //QString s = "000001103D";
+
+        //Trame ACK.command SERVO pos(18) M01 S9/S10
+        //QString s = "0000011424487D";
+
+        //Trame ACK.command PWM (50/212) M01 S5
+        //QString s = "0000016414BD";
+
+        //Trame ACK.command HEATER eco M01 A2/S4
+        //QString s = "0000014CC8DD";
+
+        QString s = "";
         ZbpMessage trame(s);
         emit toDisplay("message received: "+trame.toTrame());
         GenMessage* message = GenMessageFactory::createMessage(trame);
@@ -124,6 +163,8 @@ public slots:
 
 signals:
     void toDisplay(QString);
+
+    void quitApplication();
 };
 
 #endif // ZBPNETWORK_H

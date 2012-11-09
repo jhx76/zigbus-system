@@ -19,7 +19,7 @@
 #include "GenNetwork.h"
 
 
-GenNetwork::GenNetwork(const QString& id, QObject* parent) : QThread(parent) {
+GenNetwork::GenNetwork(const QString& id, QObject* parent) : QObject(parent) {
     networkId = id;
 }
 

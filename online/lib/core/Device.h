@@ -37,6 +37,11 @@ private:
     /**
 
       */
+    QString pinSubType;
+
+    /**
+
+      */
     QString pinId;
 
     /**
@@ -198,6 +203,16 @@ public:
 
       */
     void setPtrModule(Module* ptr) { this->module = ptr; }
+
+    /**
+
+      */
+    const QString& getPinSubType() const { return pinSubType; }
+
+    /**
+
+      */
+    void setPinSubType(const QString& pinSubType) { this->pinSubType = pinSubType; }
 };
 
 

@@ -19,6 +19,8 @@
 #ifndef ZIGBUS_H
 #define ZIGBUS_H
 
+#include <core/SysUtils.h>
+
 #define ZIGBUS_TYPE_ENCODSIZE                   5
 #define ZIGBUS_ORDER_ENCODSIZE                  5
 #define ZIGBUS_SUBTYPE_ENCODESIZE               3
@@ -29,11 +31,12 @@
 #define ZIGBUS_PWM_INISTATE_ENCODESIZE          1
 #define ZIGBUS_ADTYPE_ENCODESIZE                1
 #define ZIGBUS_TIMEUNIT_ENCODESIZE              1
-#define ZIGBUS_TIME_ENCODESIZE                  12
+#define ZIGBUS_TIME_ENCODESIZE                  6
 #define ZIGBUS_PWM_ORDER_ENCODESIZE             10
 #define ZIGBUS_HEATER_FUNC_ENCODESIZE           3
 #define ZIGBUS_RADPOSITION_ENCODESIZE           8
-
+#define ZIGBUS_TEMPERATURE_ENCODESIZE           6
+#define ZIGBUS_HYGRO_ENCODESIZE                 7
 #include <QString>
 /**
 
@@ -111,7 +114,7 @@ typedef enum ZIGBUS_DEVICE_TYPE {
     type_NUMERIC_INPUT = 0x02,
     type_PWM_OUTPUT = 0x03,
     type_ANALOGIC_INPUT = 0x04,
-    type_LAMP = 0x05,
+    type_LAMPE = 0x05,
     type_HEATER = 0x06,
     type_TEMPERATURE = 0x07,
     type_SERVO = 0x08,
@@ -121,6 +124,9 @@ typedef enum ZIGBUS_DEVICE_TYPE {
     //type_GATE = 0x0C
 } ZigbusDeviceType;
 
+/**
+
+  */
 typedef enum ZIGBUS_SUB_TYPE {
     stype_UNDEF = 0x00,
     stype_DHT11 = 0x01,
@@ -135,6 +141,10 @@ typedef enum ZIGBUS_ANALOGIC_REFERENCE {
     aref_EXTERNAL = 0x04
 } ZigbusAnalogicReference;
 
+QString convertAnalogicReference(ZigbusAnalogicReference ref);
+
+ZigbusAnalogicReference convertAnalogicReference(const QString& str);
+
 typedef enum ZIGBUS_HEATER_FUNCTION {
     hfunc_UNDEF = 0x00,
     hfunc_STOP = 0x01,
@@ -146,7 +156,19 @@ typedef enum ZIGBUS_HEATER_FUNCTION {
 
 ZigbusHeaterFunction convertHeaterFunction(const QString& strFunc);
 
+QString convertHeaterFunction(ZigbusHeaterFunction func);
+
 ZigbusDeviceType convertDeviceType(const QString& strType);
+
+QString convertDeviceType(ZigbusDeviceType type);
+
+ZigbusSubType convertStrToSubType(const QString& str);
+
+QString convertSubTypeToStr(ZigbusSubType stype);
+
+int convertDevicePinId(const QString& strPinId);
+
+QString convertDevicePinId(int id);
 
 }
 

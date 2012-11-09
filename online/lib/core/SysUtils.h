@@ -24,7 +24,6 @@
 #define STR_LF              "\n"
 #define STR_BRACE_LEFT      "{"
 #define STR_BRACE_RIGHT     "}"
-//#define MAX_XAPHEADER_LINE  11
 #define STR_EQUALS          "="
 #define STR_GREATER         ">"
 #define STR_LESS            "<"
@@ -32,7 +31,7 @@
 /* MACRO pour recuperer la localisation d'une trace*/
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define AT /*__FUNC__*/QString(" (" __FILE__ " : " TOSTRING(__LINE__)")")
+#define AT QString(" [" __FILE__ "]" TOSTRING(__LINE__)" ")
 /**
   @namespace utils
   @author jhx

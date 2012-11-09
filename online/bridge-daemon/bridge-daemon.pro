@@ -3,22 +3,19 @@
 # Project created by QtCreator 2012-09-02T21:40:02
 #
 #-------------------------------------------------
-
 QT       += core gui xml xmlpatterns network sql debug
-
 QT       -= gui
-
-CONFIG   += console
+CONFIG   += console extserialport
 CONFIG   -= app_bundle
-
 TEMPLATE = app
+INCLUDEPATH += ../lib/com/serial \
+               ../lib
 
-INCLUDEPATH += ../lib/
+LIBS += -L../lib/com/serial/qextserialport/lib -lqextserialport-1.2
+
 
 OBJECTS_DIR = ../../build/bridge-daemon/obj
-
 MOC_DIR = ../../build/bridge-daemon/moc
-
 DESTDIR = ../../bin
 
 CONFIG(debug, debug|release) {
@@ -28,24 +25,6 @@ CONFIG(debug, debug|release) {
 else {
     TARGET = bridge-daemon
 }
-
-unix|win32:HEADERS                 += ../lib/com/serial/qextserialbase.h \
-                          ../lib/com/serial/qextserialport.h \
-                          ../lib/com/serial/qextserialenumerator.h
-
-unix|win32:SOURCES                 += ../lib/com/serial/qextserialbase.cpp \
-                          ../lib/com/serial/qextserialport.cpp \
-                          ../lib/com/serial/qextserialenumerator.cpp
-
-unix:HEADERS           += ../lib/com/serial/posix_qextserialport.h
-unix:SOURCES           += ../lib/com/serial/posix_qextserialport.cpp
-unix:DEFINES           += _TTY_POSIX_
-
-
-win32:HEADERS          += ../lib/com/serial/win_qextserialport.h
-win32:SOURCES          += ../lib/com/serial/win_qextserialport.cpp
-win32:DEFINES          += _TTY_WIN_
-
 
 SOURCES += main.cpp \
     BridgeDaemon.cpp \
@@ -87,6 +66,7 @@ SOURCES += main.cpp \
     ../lib/core/model/HardwareTypeModel.cpp \
     ../lib/com/zbp/zigbus.cpp \
     ../lib/com/zbp/ZbpNetworkProperties.cpp \
+    ../lib/core/model/HardwareSubTypeModel.cpp
 
 HEADERS += \
     BridgeDaemon.h \
@@ -129,4 +109,5 @@ HEADERS += \
     ../lib/core/model/SymbolicNetworkModel.h \
     ../lib/core/model/LocationModel.h \
     ../lib/core/model/HardwareTypeModel.h \
-    ../lib/com/zbp/ZbpNetworkProperties.h
+    ../lib/com/zbp/ZbpNetworkProperties.h \
+    ../lib/core/model/HardwareSubTypeModel.h

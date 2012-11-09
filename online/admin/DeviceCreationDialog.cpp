@@ -19,6 +19,7 @@ DeviceCreationDialog::DeviceCreationDialog(QList<Module> *moduleList, QueryBean*
     connect(ui->optionPinGroupBox, SIGNAL(toggled(bool)), ui->pin2RadioNumeric, SLOT(setChecked(bool)));
     connect(ui->optionPinGroupBox, SIGNAL(toggled(bool)), this, SLOT(onPin2RadioChanged(bool)));
     connect(ui->pin2RadioNumeric, SIGNAL(toggled(bool)), this, SLOT(onPin2RadioChanged(bool)));
+    connect(ui->pinTypeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(onHardwareTypeSelectionChanged(QString)));
     ui->optionPinGroupBox->setChecked(false);
     ui->pin1RadioNumeric->setChecked(true);
     ui->pin2RadioNumeric->setChecked(true);
@@ -34,6 +35,7 @@ DeviceCreationDialog::~DeviceCreationDialog()
 void DeviceCreationDialog::initialize() {
     locationList = queryBean->getAllLocations();
     hardwareTypeList = queryBean->getAllHardwareTypes();
+    hardwareSubtypeList = queryBean->getAllHardwareSubtypes();
     symbolicTypeList = queryBean->getAllSymbolicTypes();
     symbolicNetworkList = queryBean->getAllSymbolicNetworks();
     zigbusNetworkList = queryBean->getAllZigbusNetworks();
@@ -48,6 +50,13 @@ void DeviceCreationDialog::initialize() {
 
     for(int i = 0; i < moduleList->count(); i++)
         ui->moduleComboBox->addItem(moduleList->at(i).getLabel());
+
+    ui->pinSubTypeComboBox->clear();
+    for(int i = 0; i < hardwareSubtypeList.count(); i++) {
+        if(hardwareSubtypeList.at(i).getCorrespondingType() == ui->pinTypeComboBox->currentText()) {
+            ui->pinSubTypeComboBox->addItem(hardwareSubtypeList.at(i).getSubtype());
+        }
+    }
 }
 
 void DeviceCreationDialog::saveAndAccept() {
@@ -60,6 +69,8 @@ void DeviceCreationDialog::saveAndAccept() {
             device.setInstance(ui->instanceLinEdit->text().trimmed());
             device.setLocation(ui->locationComboBox->currentText());
             device.setPinType(ui->pinTypeComboBox->currentText());
+            if(!ui->pinSubTypeComboBox->currentText().isEmpty())
+                device.setPinSubType(ui->pinSubTypeComboBox->currentText());
             if(ui->optionPinGroupBox->isChecked())
                 device.setOptionalId(ui->pin2ComboBox->currentText());
             else
@@ -67,7 +78,13 @@ void DeviceCreationDialog::saveAndAccept() {
             device.setVendor(ui->vendorComboBox->currentText());
             device.setType(ui->typeComboBox->currentText());
             tmpModule->append(device);
-            queryBean->insertDevice(device);
+            try {
+                queryBean->insertDevice(device);
+            }
+            catch(const error::SqlException& exception) {
+                qDebug() << exception.toString();
+            }
+
             accept();
             return;
         }
@@ -108,4 +125,13 @@ void DeviceCreationDialog::onPin1RadioChanged(bool) {
 
 void DeviceCreationDialog::onPin2RadioChanged(bool) {
     onModuleSelectionChanged(ui->moduleComboBox->currentText());
+}
+
+void DeviceCreationDialog::onHardwareTypeSelectionChanged(QString str) {
+    ui->pinSubTypeComboBox->clear();
+    for(int i = 0; i < hardwareSubtypeList.count(); i++) {
+        if(hardwareSubtypeList.at(i).getCorrespondingType() == str) {
+            ui->pinSubTypeComboBox->addItem(hardwareSubtypeList.at(i).getSubtype());
+        }
+    }
 }

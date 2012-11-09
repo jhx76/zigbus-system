@@ -43,6 +43,8 @@ private:
 
     QList<HardwareTypeModel> hardwareTypeList;
 
+    QList<HardwareSubTypeModel> hardwareSubtypeList;
+
 public:
     DeviceEditionPanel(QWidget *parent = 0);
 
@@ -59,6 +61,8 @@ public slots:
 
     void refreshPinCombos();
 
+    void onHardwareTypeSelectionChanged(QString);
+
     void onPin1SelectionChanged(QString);
 
     void onPin1RadioNumericSelected(bool);
@@ -70,6 +74,8 @@ public slots:
     void onCancelButtonClick();
 
     void onCloseButtonClick();
+
+    void onPin2GroupBoxChecked(bool);
 
 signals:
     void um_save_device(Device*);

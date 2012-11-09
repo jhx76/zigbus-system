@@ -36,31 +36,40 @@ ZbpNetwork::ZbpNetwork(SingleDAT* deviceAddressTranslator, const ZbpNetworkPrope
 }
 
 void ZbpNetwork::initialize(const QString& str) {
-//    if(QFile::exists(properties.getFileName())) {
-        modem = new QextSerialPort();
-        modem->setPortName(properties.getFileName());
-        modem->setBaudRate(BAUD9600);
-        modem->setParity(PAR_NONE);
+    if(QFile::exists(properties.getFileName())) {
+        modem = new QextSerialPort(properties.getFileName());
+        modem->setBaudRate(BAUD115200);
         modem->setDataBits(DATA_8);
-        modem->setStopBits(STOP_1);
         modem->setFlowControl(FLOW_OFF);
+        modem->setParity(PAR_NONE);
+        modem->setStopBits(STOP_1);
+        //modem->setTextModeEnabled(true);
+        //modem->setQueryMode(QextSerialPort::EventDriven);
+        modem->setTimeout(1);
         connect(modem, SIGNAL(readyRead()), this, SLOT(onDataAvaible()));
-  //  }
-    /*else {
-        throw error::InitializationException("serial "+properties.getFileName()+" cannot be found...", AT, true);
-    }*/
+    }
+    else
+        throw error::InitializationException(properties.getFileName()+" doesn't exist", AT, true);
 }
 
+/*
 void ZbpNetwork::run() {
-    startListening();
+    if(!startListening())
+        emit this->quitApplication();
+    exec();
 }
+*/
+
 
 bool ZbpNetwork::startListening() {
-    test();
-    if(QFile::exists(modem->portName()))
-        return modem->open(QIODevice::ReadWrite);
-    else
-        return false;
+    bool running = modem->open(QIODevice::ReadWrite);
+    if(running)
+        qDebug() << "Listening Zigbus network on "+modem->portName();
+    else {
+        qDebug() << AT << " error: " << modem->errorString();
+        qDebug() << "Bridge isn't listening zigbus network ...";
+    }
+    return running;
 }
 
 bool ZbpNetwork::isListening() {
@@ -68,21 +77,26 @@ bool ZbpNetwork::isListening() {
 }
 
 void ZbpNetwork::stopListening() {
-    modem->close();
+    if(modem)
+        modem->close();
 }
 
 
 void ZbpNetwork::sendMessage(GenMessage* message) {
     ZbpMessage zbpmsg = convertAndFreeMemory(message);
-    qDebug() << zbpmsg.toTrame();
-    if(modem->isOpen())
-        modem->write(zbpmsg.toTrame().toLocal8Bit());
+
+    if(!zbpmsg.toTrame().contains("-")) {
+        qDebug() << "send: " << zbpmsg.toTrame();
+        if(modem && modem->isOpen()) {
+            modem->write(zbpmsg.toTrame().toLocal8Bit());
+        }
+    }
 }
 
 zigbus::ZigbusDeviceType ZbpNetwork::convertDeviceType(const QString &strType) {
     if(strType == "temperature") return zigbus::type_TEMPERATURE;
     else if(strType == "heater") return zigbus::type_HEATER;
-    else if(strType == "lamp") return zigbus::type_LAMP;
+    else if(strType == "lamp") return zigbus::type_LAMPE;
     else if(strType == "numeric_input") return zigbus::type_NUMERIC_INPUT;
     else if(strType == "numeric_output") return zigbus::type_NUMERIC_OUTPUT;
     else if(strType == "analogic_input") return zigbus::type_ANALOGIC_INPUT;
@@ -108,7 +122,7 @@ int ZbpNetwork::convertDevicePinId(const QString &strPinId) {
         return rslt;
     else if(strPinId.mid(0, 1) == "A")
         return rslt+100;
-    else throw QString();
+    else throw QString(AT+"error: unknown pin id");
 }
 
 ZbpMessage ZbpNetwork::convertAndFreeMemory(GenMessage *genericMessage) {
@@ -146,7 +160,7 @@ ZbpMessage ZbpNetwork::convertAndFreeMemory(GenMessage *genericMessage) {
 
                 if(commandMessage->getCommandType() == "output.state") {
                     address = this->deviceAddressTranslator->find(commandMessage->getTarget());
-                    qDebug() << address.toTrame();
+                    //qDebug() << address.toTrame();
                     if(address.getHardwareType() == zigbus::type_NUMERIC_OUTPUT) {
                         if(commandMessage->contains(gen::state)) {
                             if(commandMessage->getParam(gen::state).toUpper() == "ON") {
@@ -188,6 +202,12 @@ ZbpMessage ZbpNetwork::convertAndFreeMemory(GenMessage *genericMessage) {
                                               convertDevicePinId(address.getMainPin()));
                         bindex += ZIGBUS_PINID_ENCODESIZE;
                         if(commandMessage->contains(gen::level)) {
+                            QString strlevel = commandMessage->getParam(gen::level);
+                            if(strlevel.contains("/")) {
+                                int denominateur = strlevel.mid(strlevel.indexOf("/")).toInt();
+                                int value = strlevel.mid(0, strlevel.indexOf("/")-1).toInt();
+                                resultMessage.setBits(bindex, ZIGBUS_PWM_ORDER_ENCODESIZE, ((value*512)/denominateur));
+                            }
                             resultMessage.setBits(bindex, ZIGBUS_PWM_ORDER_ENCODESIZE,
                                                   commandMessage->getParam(gen::level).toInt());
                             bindex += ZIGBUS_PWM_ORDER_ENCODESIZE;
@@ -212,14 +232,14 @@ ZbpMessage ZbpNetwork::convertAndFreeMemory(GenMessage *genericMessage) {
                     }
                     else if(address.getHardwareType() == zigbus::type_HEATER) {
                         resultMessage.setOrder(zigbus::order_HEATER);
-                        if(commandMessage->contains(gen::state)
-                                && zigbus::convertHeaterFunction(commandMessage->getParam(gen::state)) != zigbus::hfunc_UNDEF)
+                        if(commandMessage->contains(gen::func)
+                                && zigbus::convertHeaterFunction(commandMessage->getParam(gen::func)) != zigbus::hfunc_UNDEF)
                         {
                             resultMessage.setBits(bindex, ZIGBUS_HEATER_FUNC_ENCODESIZE,
-                                                  zigbus::convertHeaterFunction(commandMessage->getParam(gen::state)));
+                                                  zigbus::convertHeaterFunction(commandMessage->getParam(gen::func)));
                             bindex += ZIGBUS_HEATER_FUNC_ENCODESIZE;
                         }
-                        else throw QString("error: unknown heater function");
+                        else throw QString(AT+"error: unknown heater function");
                         resultMessage.setBits(bindex, ZIGBUS_PINID_ENCODESIZE,
                                               convertDevicePinId(address.getMainPin()));
                         bindex += ZIGBUS_PINID_ENCODESIZE;
@@ -230,14 +250,22 @@ ZbpMessage ZbpNetwork::convertAndFreeMemory(GenMessage *genericMessage) {
                     }
                 }
                 else if(commandMessage->getCommandType() == "configuration") {
-                    if(commandMessage->contains(gen::id) && commandMessage->contains(gen::type)) {
-                        address = this->deviceAddressTranslator->find(commandMessage->getTarget(),
-                                                                      commandMessage->getParam(gen::id),
-                                                                      commandMessage->getParam(gen::id2),
-                                                                      commandMessage->getParam(gen::type));
-                    }
+                    QString strId = "", strId2 = "";
+                    if(commandMessage->contains(gen::id)) strId = commandMessage->getParam(gen::id);
+                    else if(commandMessage->contains(gen::idcmd)) strId = commandMessage->getParam(gen::idcmd);
+                    else if(commandMessage->contains(gen::alterp)) strId = commandMessage->getParam(gen::alterp);
                     else
                         throw QString("error: unknown pin type");
+
+                    if(commandMessage->contains(gen::id2)) strId2 = commandMessage->getParam(gen::id2);
+                    else if(commandMessage->contains(gen::idpuis)) strId2 = commandMessage->getParam(gen::idpuis);
+                    else if(commandMessage->contains(gen::alterm)) strId2 = commandMessage->getParam(gen::alterm);
+
+                    address = this->deviceAddressTranslator->find(commandMessage->getTarget(),
+                                                                  strId,
+                                                                  strId2,
+                                                                  commandMessage->getParam(gen::type));
+
                     resultMessage.setOrder(zigbus::order_CONFIGURE);
                     zigbus::ZigbusDeviceType zbtype = convertDeviceType(commandMessage->getParam(gen::type));
                     if(zbtype != zigbus::type_UNDEF) {
@@ -270,7 +298,7 @@ ZbpMessage ZbpNetwork::convertAndFreeMemory(GenMessage *genericMessage) {
                             bindex += ZIGBUS_PINID_ENCODESIZE;
                         }
 
-                        else if(zbtype == zigbus::type_LAMP) {
+                        else if(zbtype == zigbus::type_LAMPE) {
                             throw QString("error: type_LAMP isn't implemented in this version");
                         }
 
@@ -442,9 +470,23 @@ ZbpMessage ZbpNetwork::convertAndFreeMemory(GenMessage *genericMessage) {
 }
 
 void ZbpNetwork::onDataAvaible() {
-    QByteArray data = modem->readAll();
-    ZbpMessage trame(data.trimmed());
-    GenMessage* message = GenMessageFactory::createMessage(trame);
-    if(message != NULL)
-        emit this->messageReceived(message, "zigbus");
+    try {
+        waitingData += modem->readAll();
+        QString trame;
+        while(waitingData.contains("\n")) {
+            trame = waitingData.mid(0, waitingData.indexOf("\n")-1);
+            waitingData = waitingData.mid(waitingData.indexOf("\n")+1);
+        }
+        if(!trame.isEmpty()) {
+            if(trame.contains("\n"))
+                trame.remove("\n");
+            ZbpMessage zigbusMessage(trame);
+            GenMessage* genericMessage = GenMessageFactory::createMessage(zigbusMessage);
+            if(genericMessage != NULL)
+                emit this->messageReceived(genericMessage, "zigbus");
+        }
+    }
+    catch(const QString& exception) {
+        qDebug() << exception;
+    }
 }

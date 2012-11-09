@@ -29,7 +29,6 @@
 
 #include <com/zbp/ZbpMessage.h>
 #include <com/zbp/ZbpAddress.h>
-#include <com/zbp/zigbus.h>
 
 #include <com/xap/XAPMessage.h>
 #include <com/xap/XAPUtils.h>

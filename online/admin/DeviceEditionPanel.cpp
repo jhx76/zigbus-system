@@ -20,6 +20,7 @@ DeviceEditionPanel::DeviceEditionPanel(Device* deviceToEdit, QList<Module>* modu
     connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(onSaveDevice()));
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButtonClick()));
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(onCancelButtonClick()));
+    connect(ui->optionPinGroupBox, SIGNAL(clicked(bool)), this, SLOT(onPin2GroupBoxChecked(bool)));
     try {
         initialize();
     }
@@ -55,6 +56,7 @@ void DeviceEditionPanel::initialize() {
         vendorList = queryBean->getAllSymbolicNetworks();
         zigbusNetworkList = queryBean->getAllZigbusNetworks();
         hardwareTypeList = queryBean->getAllHardwareTypes();
+        hardwareSubtypeList = queryBean->getAllHardwareSubtypes();
     }
 
     ui->locationComboBox->clear();
@@ -85,9 +87,21 @@ void DeviceEditionPanel::initialize() {
             ui->pinTypeComboBox->setCurrentIndex(i);
     }
 
+    ui->pinSubTypeComboBox->clear();
+    for(int i = 0; i < hardwareSubtypeList.count(); i++) {
+        if(hardwareSubtypeList.at(i).getCorrespondingType() == ui->pinTypeComboBox->currentText()) {
+            ui->pinSubTypeComboBox->addItem(hardwareSubtypeList.at(i).getSubtype());
+            if(tmpDevice.getPinSubType() == hardwareSubtypeList.at(i).getSubtype())
+                ui->pinSubTypeComboBox->setCurrentIndex(i);
+        }
+    }
+
+    ui->instanceLinEdit->setText(tmpDevice.getInstance());
+
     connect(ui->pin1RadioNumeric, SIGNAL(toggled(bool)), this, SLOT(onPin1RadioNumericSelected(bool)));
     connect(ui->pin2RadioNumeric, SIGNAL(toggled(bool)), this, SLOT(onPin2RadioNumericSelected(bool)));
     connect(ui->moduleComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(onModuleSelectionChanged(QString)));
+    connect(ui->pinTypeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(onHardwareTypeSelectionChanged(QString)));
 
     if(tmpDevice.getPinId().contains("S"))
         ui->pin1RadioNumeric->setChecked(true);
@@ -121,6 +135,7 @@ void DeviceEditionPanel::onSaveDevice() {
     tmpDevice.setPinType(ui->pinTypeComboBox->currentText());
     tmpDevice.setInstance(ui->instanceLinEdit->text().trimmed());
     tmpDevice.setVendor(ui->vendorComboBox->currentText());
+    tmpDevice.setPinSubType(ui->pinSubTypeComboBox->currentText());
 
     try {
         qDebug() << QString::number(queryBean->updateDevice(*deviceInEdition, tmpDevice)) << " rows updated !";
@@ -159,7 +174,8 @@ void DeviceEditionPanel::refreshPinCombos() {
                             : deviceInEdition->getPtrModule()->getAnalogIOCount()); i++) {
             QString s = (ui->pin2RadioNumeric->isChecked()? "S" : "A");
             s += QString::number(i);
-            /// @todo device support for second Pin (heater, servo, pwm, etc...)
+            ui->pin2ComboBox->addItem(s);
+
             if(!deviceInEdition->getOptionalId().isEmpty() &&
                     s == deviceInEdition->getOptionalId())
             {
@@ -179,7 +195,7 @@ void DeviceEditionPanel::onModuleSelectionChanged(QString s) {
     refreshPinCombos();
 }
 
-void DeviceEditionPanel::onPin1RadioNumericSelected(bool numeric) {
+void DeviceEditionPanel::onPin1RadioNumericSelected(bool) {
     refreshPinCombos();
 }
 
@@ -187,7 +203,11 @@ void DeviceEditionPanel::onPin1SelectionChanged(QString selected) {
     tmpDevice.setPinId(selected);
 }
 
-void DeviceEditionPanel::onPin2RadioNumericSelected(bool numeric) {
+void DeviceEditionPanel::onPin2RadioNumericSelected(bool) {
+    refreshPinCombos();
+}
+
+void DeviceEditionPanel::onPin2GroupBoxChecked(bool) {
     refreshPinCombos();
 }
 
@@ -207,3 +227,16 @@ void DeviceEditionPanel::onCancelButtonClick() {
     this->initialize();
 }
 
+void DeviceEditionPanel::onHardwareTypeSelectionChanged(QString str) {
+    ui->pinSubTypeComboBox->clear();
+    for(int i = 0; i < hardwareSubtypeList.count(); i++) {
+        if(hardwareSubtypeList.at(i).getCorrespondingType() == str) {
+            ui->pinSubTypeComboBox->addItem(hardwareSubtypeList.at(i).getSubtype());
+            if(tmpDevice.getPinSubType() == hardwareSubtypeList.at(i).getSubtype())
+                ui->pinSubTypeComboBox->setCurrentIndex(i);
+        }
+    }
+
+
+
+}

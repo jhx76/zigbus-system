@@ -41,12 +41,12 @@ public:
 
     virtual void initializeApplication();
 
-    void clearAndQuit();
-
 public slots:
     void processMessage(GenMessage* message, QString networkId);
 
     void display(QString message);
+
+    void clearAndQuit();
 
 signals:
     void messageForDevices(GenMessage* message);

@@ -27,6 +27,7 @@ Device::Device()
     this->pinId = "";
     this->optionalId = "";
     this->pinType = "";
+    this->pinSubType = "";
     this->module = NULL;
 }
 
@@ -40,6 +41,7 @@ Device::Device(const QString &vendor, const QString &type, const QString &locati
     this->instance = instance;
     this->pinId = "";
     this->optionalId = "";
+    this->pinSubType = "";
     this->pinType = "";
     this->module = NULL;
 }
@@ -67,6 +69,7 @@ Device::Device(const Device &other) {
     this->pinId = other.pinId;
     this->optionalId = other.optionalId;
     this->pinType = other.pinType;
+    this->pinSubType = other.pinSubType;
     this->module = other.module;
 }
 
@@ -75,7 +78,8 @@ Device::Device(const Device &other) {
 bool Device::isEqual(const Device &other) const {
     return (this->vendor == other.vendor && this->type == other.type && this->location == other.location
             && this->instance == other.instance && this->optionalId == optionalId
-            && this->pinId == other.pinId && this->pinType == other.pinType);
+            && this->pinId == other.pinId && this->pinType == other.pinType
+            && this->pinSubType == other.pinSubType);
 }
 
 //----------------------------------------------------------------------------
@@ -89,6 +93,7 @@ Device& Device::operator =(const Device& other) {
     this->optionalId = other.optionalId;
     this->pinType = other.pinType;
     this->module = other.module;
+    this->pinSubType = other.pinSubType;
     return *this;
 }
 
@@ -109,6 +114,8 @@ QString Device::toString() const {
     s += "\tpinid: "+pinId+"\n";
     s += (optionalId.isEmpty() ? ""
          : "\toptionalId: "+optionalId+"\n");
+    s += (pinSubType == "" ? ""
+         : "\tsub-type: "+pinSubType);
     return s;
 }
 

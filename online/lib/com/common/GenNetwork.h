@@ -20,7 +20,7 @@
 #define GENNETWORK_H
 
 #include <QObject>
-#include <QThread>
+//#include <QThread>
 #include <QString>
 #include <com/common/GenMessage.h>
 #include <core/Module.h>
@@ -28,7 +28,7 @@
 /**
 
   */
-class GenNetwork : public QThread
+class GenNetwork : public QObject
 {
     Q_OBJECT
 private:
@@ -44,14 +44,11 @@ public:
       */
     GenNetwork(const QString& id = "00", QObject* parent = 0);
 
-
-    /**
-
-      */
+/*
     virtual void run() {
         exec();
     }
-
+*/
     /**
 
       */

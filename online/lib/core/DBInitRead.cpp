@@ -27,7 +27,6 @@ DBInitRead::DBInitRead(AbstractApplication* owner)
     this->configFileName = ""+qApp->applicationName()+".xml";
     this->owner = owner;
     xapProperties.setAppAddress(XAPAddress("", "", "", ""));
-    //qDebug() << "Building DBInitRead: xapProperties.getAppAddress().getVendor() = "<<xapProperties.getAppAddress().getVendor();
 }
 
 //--------------------------------------------------------------------------------------
@@ -54,6 +53,7 @@ void DBInitRead::importZigbusNetworkProperties(const QString& fileName) {
 void DBInitRead::initialize() {
     importDatabaseProperties(""+configDirectory+configFileName);
     importXAPNetworkProperties(""+configDirectory+configFileName);
+    importZigbusNetworkProperties(""+configDirectory+configFileName);
 }
 
 //--------------------------------------------------------------------------------------

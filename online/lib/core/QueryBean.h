@@ -31,6 +31,7 @@
 #include <core/model/SymbolicTypeModel.h>
 #include <core/model/SymbolicNetworkModel.h>
 #include <core/model/HardwareTypeModel.h>
+#include <core/model/HardwareSubTypeModel.h>
 #include <core/model/ZigbusNetworkModel.h>
 #include <core/Error.h>
 #include <core/SysUtils.h>
@@ -93,29 +94,39 @@ public:
     QList<SymbolicNetworkModel> getAllSymbolicNetworks();
 
     /**
+      @throw SqlException
+      */
+    QList<HardwareSubTypeModel> getAllHardwareSubtypes();
 
+    /**
+      @throw SqlException
       */
     int insertDevice(const Device& device);
 
     /**
-
+      @throw SqlException
       */
     int updateDevice(const Device& deviceInEdition, const Device& tmpDevice);
 
     /**
-
+      @throw SqlException
       */
     int updateModule(const Module& moduleInEdition, const Module& tmpModule);
 
     /**
-
+      @throw SqlException
       */
     int deleteModule(const Module& moduleToDelete);
 
     /**
-
+      @throw SqlException
       */
     int deleteDevice(const Device& deviceToDelete);
+
+    /**
+      @throw SqlException
+      */
+    int insertModule(const Module& module);
 
 };
 

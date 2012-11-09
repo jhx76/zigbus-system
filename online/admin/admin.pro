@@ -54,7 +54,10 @@ SOURCES += main.cpp\
     ../lib/core/model/HardwareTypeModel.cpp \
     ../lib/core/model/ZigbusNetworkModel.cpp \
     DatabaseConnectionDialog.cpp \
-    ../lib/com/xap/XAPMessageException.cpp
+    ../lib/com/xap/XAPMessageException.cpp \
+    ../lib/com/zbp/ZbpNetworkProperties.cpp \
+    ../lib/core/model/HardwareSubTypeModel.cpp \
+    ModuleCreationDialog.cpp
 
 HEADERS  += AdminWindow.h \
     DeviceAdministrationPanel.h \
@@ -82,11 +85,15 @@ HEADERS  += AdminWindow.h \
     ../lib/core/model/HardwareTypeModel.h \
     ../lib/core/model/ZigbusNetworkModel.h \
     DatabaseConnectionDialog.h \
-    ../lib/com/xap/XAPMessageException.h
+    ../lib/com/xap/XAPMessageException.h \
+    ../lib/com/zbp/ZbpNetworkProperties.h \
+    ../lib/core/model/HardwareSubTypeModel.h \
+    ModuleCreationDialog.h
 
 FORMS    += AdminWindow.ui \
     DeviceAdministrationPanel.ui \
     DeviceEditionPanel.ui \
     ModuleEditionPanel.ui \
     DeviceCreationDialog.ui \
-    DatabaseConnectionDialog.ui
+    DatabaseConnectionDialog.ui \
+    ModuleCreationDialog.ui
