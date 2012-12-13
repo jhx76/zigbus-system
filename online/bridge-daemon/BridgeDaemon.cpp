@@ -25,7 +25,6 @@ void BridgeDaemon::initializeApplication() {
         xapNetwork->initialize();
         //xapNetwork->startListening();
         //xapNetwork->start();
-
         //Creation du point d'acces pour le réseau de module zigbus
         queryBean = new QueryBean(iniParam->getDbProperties());
         DAT = new SingleDAT(queryBean);
@@ -50,6 +49,11 @@ void BridgeDaemon::initializeApplication() {
     }
     catch(const error::SysException& exception) {
         qDebug() << exception.toString();
+    }
+    catch(const error::SqlException& exception) {
+        qDebug() << exception.toString();
+        qDebug() << "Maybe the password to open the database is not valid ?? see the configuration xml file...";
+        clearAndQuit();
     }
 }
 

@@ -5,6 +5,7 @@ DeviceCreationDialog::DeviceCreationDialog(QList<Module> *moduleList, QueryBean*
     : QDialog(parent), ui(new Ui::DeviceCreationDialog)
 {
     ui->setupUi(this);
+    this->setWindowTitle("New Device");
     try {
         this->queryBean = queryBean;
         this->moduleList = moduleList;

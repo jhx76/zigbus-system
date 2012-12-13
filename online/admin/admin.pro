@@ -57,7 +57,12 @@ SOURCES += main.cpp\
     ../lib/com/xap/XAPMessageException.cpp \
     ../lib/com/zbp/ZbpNetworkProperties.cpp \
     ../lib/core/model/HardwareSubTypeModel.cpp \
-    ModuleCreationDialog.cpp
+    ModuleCreationDialog.cpp \
+    LocationCreationDialog.cpp \
+    LocationManagementDialog.cpp \
+    ../lib/core/ApplicationInformation.cpp \
+    TypesManagementDialog.cpp \
+    TypeCreationDialog.cpp
 
 HEADERS  += AdminWindow.h \
     DeviceAdministrationPanel.h \
@@ -88,7 +93,12 @@ HEADERS  += AdminWindow.h \
     ../lib/com/xap/XAPMessageException.h \
     ../lib/com/zbp/ZbpNetworkProperties.h \
     ../lib/core/model/HardwareSubTypeModel.h \
-    ModuleCreationDialog.h
+    ModuleCreationDialog.h \
+    LocationCreationDialog.h \
+    LocationManagementDialog.h \
+    ../lib/core/ApplicationInformation.h \
+    TypesManagementDialog.h \
+    TypeCreationDialog.h
 
 FORMS    += AdminWindow.ui \
     DeviceAdministrationPanel.ui \
@@ -96,4 +106,8 @@ FORMS    += AdminWindow.ui \
     ModuleEditionPanel.ui \
     DeviceCreationDialog.ui \
     DatabaseConnectionDialog.ui \
-    ModuleCreationDialog.ui
+    ModuleCreationDialog.ui \
+    LocationCreationDialog.ui \
+    LocationManagementDialog.ui \
+    TypesManagementDialog.ui \
+    TypeCreationDialog.ui

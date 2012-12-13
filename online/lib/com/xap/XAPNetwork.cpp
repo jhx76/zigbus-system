@@ -46,7 +46,7 @@ XAPNetwork::XAPNetwork(const QString& networkId, const XAPNetworkProperties &pro
 
 //----------------------------------------------------------------------------
 
-XAPNetwork::~XAPNetwork(){
+XAPNetwork::~XAPNetwork() {
     if(socket != NULL) {
         if(socket->isOpen()) {
             disconnect(socket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
@@ -134,6 +134,9 @@ void XAPNetwork::sendMessage(GenMessage* message) {
     }
     catch(const QString& exception) {
         qDebug() << exception;
+    }
+    catch(const error::SysException& exception) {
+        qDebug() << exception.toString();
     }
 }
 
@@ -244,7 +247,7 @@ XAPMessage XAPNetwork::translate(GenMessage *message) {
         CommandMessage* commandMessage = static_cast<CommandMessage*>(message);
         if(!commandMessage)
             throw error::TranslationException(message, "Bad identified type", AT);
-        xapMessage.setClass("xapbsc.cmd");
+        xapMessage.setClass("zigbus.cmd");
         xapsource = commandMessage->getSource().getVendor()+".";
         xapsource += commandMessage->getSource().getType()+".";
         xapsource += commandMessage->getSource().getLocation();
@@ -274,7 +277,7 @@ XAPMessage XAPNetwork::translate(GenMessage *message) {
         EventMessage* eventMessage = static_cast<EventMessage*>(message);
         if(!eventMessage)
             throw error::TranslationException(message, "Bad identified type", AT);
-        xapMessage.setClass("xapbsc.event");
+        xapMessage.setClass("zigbus.event");
 
         if(eventMessage->getTypeEvent() == "init") {
             XAPBlock block("output.state");
@@ -295,7 +298,7 @@ XAPMessage XAPNetwork::translate(GenMessage *message) {
         InformationMessage* infoMessage = static_cast<InformationMessage*>(message);
         if(!infoMessage)
             throw error::TranslationException(message, "Bad identified type", AT);
-        xapMessage.setClass("xapbsc.info");
+        xapMessage.setClass("zigbus.info");
         XAPBlock block(infoMessage->getTypeInfo());
         for(int i = 0; i < infoMessage->paramCount(); i++) {
             block.append(infoMessage->elementAt(i).KeyAsString(), infoMessage->elementAt(i).value);

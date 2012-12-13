@@ -1,5 +1,9 @@
 #include <QtGui/QApplication>
+#include <QDate>
+#include <QString>
 #include "AdminWindow.h"
+
+
 
 int main(int argc, char *argv[])
 {

@@ -27,6 +27,8 @@
 #define STR_EQUALS          "="
 #define STR_GREATER         ">"
 #define STR_LESS            "<"
+#define STR_PIPE            "|"
+#define STR_SLASH           "/"
 
 /* MACRO pour recuperer la localisation d'une trace*/
 #define STRINGIFY(x) #x

@@ -38,13 +38,11 @@ ZbpNetwork::ZbpNetwork(SingleDAT* deviceAddressTranslator, const ZbpNetworkPrope
 void ZbpNetwork::initialize(const QString& str) {
     if(QFile::exists(properties.getFileName())) {
         modem = new QextSerialPort(properties.getFileName());
-        modem->setBaudRate(BAUD115200);
-        modem->setDataBits(DATA_8);
-        modem->setFlowControl(FLOW_OFF);
-        modem->setParity(PAR_NONE);
-        modem->setStopBits(STOP_1);
-        //modem->setTextModeEnabled(true);
-        //modem->setQueryMode(QextSerialPort::EventDriven);
+        modem->setBaudRate(getBaudRateFromString(properties.getBaudRate()));
+        modem->setDataBits(getDataBitsFromString(properties.getDataBit()));
+        modem->setFlowControl(getFlowFromString(properties.getFlowControl()));
+        modem->setParity(getParityFromString(properties.getParity()));
+        modem->setStopBits(getStopBitsFromString(properties.getStopBits()));
         modem->setTimeout(1);
         connect(modem, SIGNAL(readyRead()), this, SLOT(onDataAvaible()));
     }
@@ -59,6 +57,7 @@ void ZbpNetwork::run() {
     exec();
 }
 */
+
 
 
 bool ZbpNetwork::startListening() {
@@ -84,7 +83,6 @@ void ZbpNetwork::stopListening() {
 
 void ZbpNetwork::sendMessage(GenMessage* message) {
     ZbpMessage zbpmsg = convertAndFreeMemory(message);
-
     if(!zbpmsg.toTrame().contains("-")) {
         qDebug() << "send: " << zbpmsg.toTrame();
         if(modem && modem->isOpen()) {
@@ -489,4 +487,54 @@ void ZbpNetwork::onDataAvaible() {
     catch(const QString& exception) {
         qDebug() << exception;
     }
+}
+
+FlowType ZbpNetwork::getFlowFromString(const QString& str) {
+    if(str.toUpper() == "OFF") return FLOW_OFF;
+    else if(str.toUpper() == "XONXOFF") return FLOW_XONXOFF;
+    else if(str.toUpper() == "HARDWARE") return FLOW_HARDWARE;
+    else return FLOW_OFF;
+}
+
+BaudRateType ZbpNetwork::getBaudRateFromString(const QString& str) {
+    if(str == "50") return BAUD50;
+    else if(str == "75") return BAUD75;
+    else if(str == "110") return BAUD110;
+    else if(str == "134") return BAUD134;
+    else if(str == "150") return BAUD150;
+    else if(str == "200") return BAUD200;
+    else if(str == "300") return BAUD300;
+    else if(str == "600") return BAUD600;
+    else if(str == "1200") return BAUD1200;
+    else if(str == "1800") return BAUD1800;
+    else if(str == "2400") return BAUD2400;
+    else if(str == "4800") return BAUD4800;
+    else if(str == "9600") return BAUD9600;
+    else if(str == "19200") return BAUD19200;
+    else if(str == "38400") return BAUD38400;
+    else if(str == "57600") return BAUD57600;
+    else if(str == "115200") return BAUD115200;
+    return BAUD115200;
+}
+
+DataBitsType ZbpNetwork::getDataBitsFromString(const QString& str) {
+    if(str == "5") return DATA_5;
+    else if(str == "6") return DATA_6;
+    else if(str == "7") return DATA_7;
+    else if(str == "8") return DATA_8;
+    else return DATA_8;
+}
+
+StopBitsType ZbpNetwork::getStopBitsFromString(const QString& str) {
+    if(str == "1") return STOP_1;
+    else if(str == "2") return STOP_2;
+    else return STOP_1;
+}
+
+ParityType ZbpNetwork::getParityFromString(const QString& str) {
+    if(str.toUpper() == "NONE") return PAR_NONE;
+    else if(str.toUpper() == "ODD") return PAR_ODD;
+    else if(str.toUpper() == "EVEN") return PAR_EVEN;
+    else if(str.toUpper() ==  "SAPCE") return PAR_SPACE;
+    else return PAR_NONE;
 }

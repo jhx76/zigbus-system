@@ -150,6 +150,16 @@ public:
             emit this->messageReceived(message, "zigbus");
     }
 
+    static FlowType getFlowFromString(const QString& str);
+
+    static BaudRateType getBaudRateFromString(const QString& str);
+
+    static DataBitsType getDataBitsFromString(const QString& str);
+
+    static StopBitsType getStopBitsFromString(const QString& str);
+
+    static ParityType getParityFromString(const QString& str);
+
 public slots:
     /**
 

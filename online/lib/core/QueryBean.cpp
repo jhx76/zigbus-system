@@ -17,6 +17,8 @@ QueryBean::QueryBean(const QString& userName, const QString& password, const QSt
         throw error::SqlException("opening database", database.lastError().text(), AT);
 }
 
+//-----------------------------------------------------------------------
+
 QueryBean::QueryBean(const DatabaseProperties &databaseProperties) {
     this->databaseProperties = databaseProperties;
     database = QSqlDatabase::addDatabase("QMYSQL", "zigbus_admin_connection");
@@ -28,9 +30,13 @@ QueryBean::QueryBean(const DatabaseProperties &databaseProperties) {
         throw error::SqlException("opening database", database.lastError().text(), AT);
 }
 
+//-----------------------------------------------------------------------
+
 QueryBean::~QueryBean() {
     database.close();
 }
+
+//-----------------------------------------------------------------------
 
 QList<Module> QueryBean::buildModuleList(const QString &networkId) {
     QString sModule = "SELECT t_module.moduleid AS label, "
@@ -88,6 +94,8 @@ QList<Module> QueryBean::buildModuleList(const QString &networkId) {
     return moduleList;
 }
 
+//-----------------------------------------------------------------------
+
 QList<LocationModel> QueryBean::getAllLocations() {
     QString query = "SELECT id, label, description FROM t_location";
     QSqlQuery sqlQuery(query, database);
@@ -112,6 +120,8 @@ QList<LocationModel> QueryBean::getAllLocations() {
     }
     return result;
 }
+
+//-----------------------------------------------------------------------
 
 QList<SymbolicTypeModel> QueryBean::getAllSymbolicTypes() {
     QString s = "SELECT id, label, description FROM t_symbolic_type";
@@ -138,6 +148,8 @@ QList<SymbolicTypeModel> QueryBean::getAllSymbolicTypes() {
     return result;
 }
 
+//-----------------------------------------------------------------------
+
 QList<HardwareTypeModel> QueryBean::getAllHardwareTypes() {
     QString s = "SELECT id, label, description FROM t_hardware_type";
     QSqlQuery query(s, database);
@@ -163,6 +175,8 @@ QList<HardwareTypeModel> QueryBean::getAllHardwareTypes() {
     }
     return result;
 }
+
+//-----------------------------------------------------------------------
 
 QList<ZigbusNetworkModel> QueryBean::getAllZigbusNetworks() {
     QString s = "SELECT id, label, description FROM t_zigbus_network";
@@ -191,6 +205,8 @@ QList<ZigbusNetworkModel> QueryBean::getAllZigbusNetworks() {
 
 }
 
+//-----------------------------------------------------------------------
+
 QList<SymbolicNetworkModel> QueryBean::getAllSymbolicNetworks() {
     QString s = "SELECT id, label, description FROM t_symbolic_network";
     QSqlQuery query(s, database);
@@ -217,6 +233,8 @@ QList<SymbolicNetworkModel> QueryBean::getAllSymbolicNetworks() {
     return result;
 }
 
+//-----------------------------------------------------------------------
+
 int QueryBean::insertDevice(const Device &device) {
     QString s =
     "INSERT INTO t_device (et_module, et_symbolic_network, et_symbolic_type, et_hardware_type, et_location, instance, main_pin, optional_pin, subtype) "
@@ -235,6 +253,8 @@ int QueryBean::insertDevice(const Device &device) {
         throw error::SqlException(s, query.lastError().text(), AT);
     return query.numRowsAffected();
 }
+
+//-----------------------------------------------------------------------
 
 int QueryBean::updateDevice(const Device &deviceInEdition, const Device &tmpDevice) {
     bool ok;
@@ -283,6 +303,8 @@ int QueryBean::updateDevice(const Device &deviceInEdition, const Device &tmpDevi
     return query.numRowsAffected();
 }
 
+//-----------------------------------------------------------------------
+
 int QueryBean::updateModule(const Module &moduleInEdition, const Module &tmpModule) {
     int moduleId = -1;
     bool ok;
@@ -313,6 +335,7 @@ int QueryBean::updateModule(const Module &moduleInEdition, const Module &tmpModu
     return queryUpdate.numRowsAffected();
 }
 
+//-----------------------------------------------------------------------
 
 int QueryBean::deleteDevice(const Device &deviceToDelete) {
     QString s = "DELETE FROM t_device "
@@ -333,6 +356,8 @@ int QueryBean::deleteDevice(const Device &deviceToDelete) {
     return query.numRowsAffected();
 }
 
+//-----------------------------------------------------------------------
+
 int QueryBean::deleteModule(const Module &moduleToDelete) {
     QString s = "DELETE FROM t_module WHERE moduleid='"+moduleToDelete.getLabel()+"' "
             "AND et_zigbus_netid=(SELECT id FROM t_zigbus_network WHERE label='"+moduleToDelete.getZigbusNetworkId()+"') ";
@@ -342,6 +367,8 @@ int QueryBean::deleteModule(const Module &moduleToDelete) {
         throw error::SqlException(s, query.lastError().text(), AT);
     return query.numRowsAffected();
 }
+
+//-----------------------------------------------------------------------
 
 QList<HardwareSubTypeModel> QueryBean::getAllHardwareSubtypes() {
     QString s = "SELECT t_hardware_subtype.id as subtypeid, subtype as subtypelabel, t_hardware_type.label as typelabel, t_hardware_subtype.description as description "
@@ -360,6 +387,8 @@ QList<HardwareSubTypeModel> QueryBean::getAllHardwareSubtypes() {
     return resultList;
 }
 
+//-----------------------------------------------------------------------
+
 int QueryBean::insertModule(const Module &module) {
     QString s = "INSERT INTO t_module (moduleid, nbpin_numeric, nbpin_analogic, description, et_zigbus_netid) "
             "VALUES('"+module.getLabel()+"', "+QString::number(module.getNumericIOCount())+", "+
@@ -371,3 +400,73 @@ int QueryBean::insertModule(const Module &module) {
         throw error::SqlException(s, query.lastError().text(), AT, false);
     return query.numRowsAffected();
 }
+
+//-----------------------------------------------------------------------
+
+int QueryBean::insertLocation(const LocationModel &location) {
+    QString s = "INSERT INTO t_location (label, description) "
+            "VALUES('"+location.getLabel()+"', '"+location.getDescription()+"')";
+    qDebug() << s;
+    QSqlQuery query(database);
+    bool ok = query.exec(s);
+    if(!ok)
+        throw error::SqlException(s, query.lastError().text(), AT, false);
+    qDebug() << "location inserted " << location.getLabel();
+    return query.numRowsAffected();
+}
+
+//-----------------------------------------------------------------------
+
+int QueryBean::deleteLocation(const LocationModel& location) {
+    QString s = "DELETE FROM t_location WHERE id="+QString::number(location.getId())+" AND label='"+location.getLabel()+"'";
+    qDebug() << s;
+    QSqlQuery query(database);
+    bool ok = query.exec(s);
+    if(!ok) throw error::SqlException(s, query.lastError().text(), AT, false);
+    qDebug() << "location deleted: " << location.getLabel();
+    return query.numRowsAffected();
+
+}
+
+//-----------------------------------------------------------------------
+
+int QueryBean::insertSymbolicType(const SymbolicTypeModel &type) {
+    QString s = "INSERT INTO t_symbolic_type (label, description)";
+    s += " VALUES('"+type.getLabel()+"', '"+type.getDescription()+"');";
+    qDebug() << s;
+    QSqlQuery query(database);
+    bool ok = query.exec(s);
+    if(!ok)
+        throw error::SqlException(s, query.lastError().text(), AT, false);
+    qDebug() << "type inserted: " << type.getLabel();
+    return query.numRowsAffected();
+}
+
+//-----------------------------------------------------------------------
+
+int QueryBean::updateSymbolicTypeById(const SymbolicTypeModel &type, int id) {
+    QString s = "UPDATE t_symbolic_type SET label='"+type.getLabel()+"', description='"+type.getDescription()+"'";
+    s += " WHERE id="+QString::number(id);
+    qDebug() << s;
+    QSqlQuery query(database);
+    bool ok = query.exec(s);
+    if(!ok)
+        throw error::SqlException(s, query.lastError().text(), AT, false);
+    qDebug() << "symbolic type updated. id="+QString::number(id);
+    return query.numRowsAffected();
+}
+
+//-----------------------------------------------------------------------
+
+int QueryBean::deleteSymbolicTypeById(int id) {
+    QString s = "DELETE FROM t_symbolic_type WHERE id="+QString::number(id)+";";
+    qDebug() << s;
+    QSqlQuery query(database);
+    bool ok = query.exec(s);
+    if(!ok)
+        throw error::SqlException(s, query.lastError().text(), AT, false);
+    qDebug() << "symbolic type deleted: " << id;
+    return query.numRowsAffected();
+}
+
+//-----------------------------------------------------------------------

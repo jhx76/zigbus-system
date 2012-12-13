@@ -4,9 +4,9 @@
 DatabaseConnectionDialog::DatabaseConnectionDialog(QWidget *parent) : QDialog(parent), ui(new Ui::DatabaseConnectionDialog)
 {
     ui->setupUi(this);
+    this->setWindowTitle("Database connection");
     try {
         defaultProperties = DatabaseProperties("./config/admin.xml");
-        //currentProperties = defaultProperties;
         currentProperties = new DatabaseProperties(defaultProperties);
         if(!currentProperties) {
             throw error::NullPointerException("DatabaseProperties::currentProperties", AT);

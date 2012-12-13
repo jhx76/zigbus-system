@@ -15,7 +15,7 @@ private:
     QString parity;
     QString flowControl;
     QString dataBit;
-
+    QString stopBits;
 
 public:
     ZbpNetworkProperties();
@@ -50,6 +50,10 @@ public:
     const QString& getDataBit() const { return dataBit; }
 
     void setDataBit(const QString& databit) { this->dataBit = databit; }
+
+    const QString& getStopBits() const { return stopBits; }
+
+    void setStopBits(const QString& stopBits) { this->stopBits = stopBits; }
 };
 
 #endif // ZBPNETWORKPROPERTIES_H

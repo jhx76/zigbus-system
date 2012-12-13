@@ -128,6 +128,31 @@ public:
       */
     int insertModule(const Module& module);
 
+    /**
+      @throw SqlException
+      */
+    int insertLocation(const LocationModel& location);
+
+    /**
+      @throw SqlException
+      */
+    int deleteLocation(const LocationModel& location);
+
+    /**
+      @throw SqlException
+      */
+    int insertSymbolicType(const SymbolicTypeModel& type);
+
+    /**
+      @throw SqlException
+      */
+    int updateSymbolicTypeById(const SymbolicTypeModel& type, int id);
+
+    /**
+      @throw SqlException
+      */
+    int deleteSymbolicTypeById(int id);
+
 };
 
 #endif // QUERYBEAN_H

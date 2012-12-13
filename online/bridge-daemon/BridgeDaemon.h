@@ -1,7 +1,6 @@
 #ifndef BRIDGEDAEMON_H
 #define BRIDGEDAEMON_H
 
-
 #include <core/AbstractApplication.h>
 #include <core/DBInitRead.h>
 #include <core/SysUtils.h>
@@ -22,10 +21,7 @@
 
   Comme toute application xAP, le bridge daemon peut utiliser un hub xAP afin de cohabiter avec d'autres applications sur le même host.
   cf. documentation du xAP Hub.
-
-
 */
-
 class BridgeDaemon : public QObject, AbstractApplication
 {
     Q_OBJECT

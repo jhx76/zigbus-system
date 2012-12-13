@@ -45,16 +45,16 @@ GenMessage* GenMessageFactory::createMessage(ZbpMessage &message) {
 GenMessage* GenMessageFactory::createMessage(XAPMessage &message) {
     try {
     if(message.getVersion() == "12") {
-        if(message.getClass().toLower() == "xapbsc.cmd") {
+        if(message.getClass().toLower() == "zigbus.cmd") {
             return createCommandMessage(message);
         }
-        else if(message.getClass().toLower() == "xapbsc.info") {
+        else if(message.getClass().toLower() == "zigbus.info") {
             return createInformationMessage(message);
         }
-        else if(message.getClass().toLower() == "xapbsc.event") {
+        else if(message.getClass().toLower() == "zigbus.event") {
             return createEventMessage(message);
         }
-        else if(message.getClass().toLower() == "xapbsc.query") {
+        else if(message.getClass().toLower() == "zigbus.query") {
             return createQueryMessage(message);
         }
         /*else if(message.getClass() == "zb.ping") {
@@ -76,7 +76,7 @@ GenMessage* GenMessageFactory::createMessage(XAPMessage &message) {
             throw error::SysException("error: unknown xapclass ("+message.getClass()+")");
     }
     else
-        throw error::SysException("error: bad version (" + message.getVersion() + ")");
+        throw error::SysException("error: bad version (" + message.getVersion() + "). Only version 12 is avaible.");
     }
     catch(const error::SysException& exception) {
         qDebug() << exception.toString();
